@@ -1,513 +1,257 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Serial (GAS) — Prefix Manager</title>
-<style>
-  :root{
-    --ink:#0f172a; --muted:#64748b; --b:#e5e7eb; --accent:#2563eb; --ok:#10b981; --warn:#f59e0b; --bad:#b91c1c;
-    --card:#fff; --shadow:0 20px 40px rgba(2,6,23,.08); --radius:14px;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP","Yu Gothic",sans-serif;color:var(--ink);background:#f6f7fb}
-  header{position:sticky;top:0;z-index:10;background:#ffffffcc;backdrop-filter:blur(8px);border-bottom:1px solid var(--b)}
-  .wrap{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between}
-  .title{display:flex;gap:10px;align-items:center}
-  .title b{font-size:18px}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-  .btn{padding:8px 12px;border:1px solid var(--b);border-radius:10px;background:#fff;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
-  .btn:disabled{opacity:.6;cursor:wait}
-  main{max-width:1100px;margin:22px auto;padding:0 16px}
-  .card{background:var(--card);border:1px solid var(--b);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
-  .hint{color:var(--muted);font-size:12px;margin-top:8px}
-  .list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-  .row{display:grid;grid-template-columns: 240px 1fr 95px 95px 70px auto;gap:8px;align-items:center;border:1px solid var(--b);border-radius:12px;padding:8px;background:#fff}
-  .row .prefix{font-family:ui-monospace,Menlo,Consolas,monospace;background:#f8fafc;padding:8px;border-radius:10px;border:1px solid var(--b)}
-  .row input[type="text"], .row input[type="number"]{width:100%;padding:8px;border-radius:10px;border:1px solid var(--b)}
-  .row .btns{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-  .pill{padding:2px 8px;border-radius:999px;border:1px solid var(--b);color:var(--muted);font-size:12px}
-  .ok{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
-  .bad{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
-  .warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
-  .ghost{opacity:.85}
-  .menubar{ position:relative }
-  .menu-btn{ padding:8px 12px; border:1px solid var(--b); border-radius:10px; background:#fff; cursor:pointer }
-  .menu{
-    position:absolute; top:110%; right:0; min-width:220px; background:#fff;
-    border:1px solid var(--b); border-radius:12px; box-shadow:var(--shadow);
-    padding:6px; display:none; z-index:100;
-  }
-  .menu.open{ display:block }
-  .menu .sec{ padding:6px 10px 4px; font-size:12px; color:var(--muted) }
-  .menu a, .menu button{
-    display:flex; align-items:center; gap:8px; width:100%;
-    padding:9px 10px; border:0; background:transparent; border-radius:8px; text-align:left; color:var(--ink);
-  }
-  .menu a{text-decoration:none}
-  .menu a:hover, .menu button:hover{ background:#f1f5f9 }
-  .sep{ height:1px; background:var(--b); margin:6px }
-  .admin-only{display:none}
-  @media (max-width: 900px){ .row{grid-template-columns: 1fr 1fr 95px 95px 70px auto} .row .prefix{font-size:12px}}
-
-  /* NEW: icon-only small button */
-  .btn-icon{padding:6px 9px;border:1px solid var(--b);border-radius:10px;background:#fff;cursor:pointer}
-  .btn-icon:hover{background:#f1f5f9}
-</style>
+  <meta charset="UTF-8" />
+  <title>Admin Prefix — Kensa Shared Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#0b1020; --panel:#121a33; --ink:#eaf2ff; --muted:#a7b2cc; --acc:#72a0ff; --ok:#19c37d; --warn:#ffb020; --err:#ff5d5d; }
+    *{ box-sizing:border-box; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    body{ margin:0; background:linear-gradient(180deg,#0b1020 0%,#0e1530 100%); color:var(--ink); min-height:100dvh; }
+    .wrap{ max-width:960px; margin:32px auto; padding:0 16px; }
+    h1{ font-size:28px; margin:0 0 12px; }
+    p.muted{ color:var(--muted); margin:8px 0 24px; }
+    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .panel{ background:var(--panel); border:1px solid #1f2a55; border-radius:14px; padding:16px; }
+    .panel h2{ font-size:18px; margin:0 0 12px; }
+    label{ display:block; font-weight:600; margin:10px 0 8px; }
+    input, select, button{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid #3751a0; background:#0d1430; color:var(--ink); }
+    input::placeholder{ color:#7f8bb1; }
+    button{ cursor:pointer; border-color:#4d6ed8; background:linear-gradient(180deg,#1a2d66,#142352); }
+    button:hover{ filter:brightness(1.05); }
+    .row{ display:flex; gap:10px; }
+    .row > *{ flex:1; }
+    .help{ font-size:13px; color:var(--muted); line-height:1.5; }
+    .kbd{ display:inline-block; padding:2px 6px; border:1px solid #435398; border-radius:6px; font-size:12px; }
+    .stat{ font:600 14px/1.4 ui-sans-serif,system-ui; background:#0b1230; border:1px dashed #4157a0; border-radius:10px; padding:10px; }
+    .stat .ok{ color:var(--ok); } .stat .warn{ color:var(--warn); } .stat .err{ color:var(--err); }
+    .foot{ margin-top:24px; color:#99a6cc; font-size:12px; opacity:.9; }
+    .small{ font-size:12px; color:#9fb1e6; }
+    .pill{ display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #3e5db1; background:#0f1a3a; font-size:12px; color:#cfe2ff; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .hr{ height:1px; background:#243168; margin:14px 0; }
+  </style>
 </head>
 <body>
-<header>
   <div class="wrap">
-    <div class="title">
-      <img src="./tsh.png" alt="TSH" style="height:28px">
-      <b>Admin Serial (GAS)</b>
-      <span id="ping" class="pill ghost">checking…</span>
-      <span id="admState" class="pill warn">管理: OFF</span>
-    </div>
-    <div class="toolbar">
-      <button id="btnSyncForms" class="btn">Sync Forms (Sheet)</button>
-      <button id="btnSync" class="btn admin-only">Sync Server</button>
-      <button id="btnRefresh" class="btn admin-only">Refresh Semua</button>
-      <button id="btnAdd" class="btn admin-only">＋ Tambah Prefix</button>
-      <button id="btnSample" class="btn admin-only">＋ Contoh</button>
-      <button id="btnExport" class="btn admin-only">Export</button>
-      <button id="btnImport" class="btn admin-only">Import</button>
-      <button id="btnPurgeNg" class="btn admin-only">Bersihkan NG</button>
-      <button id="btnAdmin" class="btn" title="Admin login/logout">管理</button>
+    <h1>Admin Prefix — Kensa Shared Server</h1>
+    <p class="muted">Atur <span class="pill">Admin Prefix Override</span> lokal, dan ubah <span class="pill">digits</span>/<span class="pill">next</span> di server GAS untuk setiap <span class="pill">app_ns::prefix</span>.</p>
 
-      <div class="menubar">
-        <button id="menuBtn" class="menu-btn" type="button">ナビ ▾</button>
-        <div id="menu" class="menu" role="menu" aria-hidden="true">
-          <div class="sec">ナビ</div>
-          <!-- Link dinamis akan disisipkan lewat JS -->
+    <div class="grid">
+      <!-- LOCAL OVERRIDE -->
+      <div class="panel">
+        <h2>① Admin Prefix Override (Local Storage)</h2>
+        <label>Prefix (6 digit + ハイフン) — contoh: <span class="mono">282520-</span></label>
+        <div class="row">
+          <input id="overridePrefix" placeholder="例: 282520-" />
+          <button id="btnApplyLocal">Set Override</button>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <button id="btnClearLocal">Clear Override</button>
+          <button id="btnBroadcast">Broadcast ke Tab Lain</button>
+        </div>
+        <div class="hr"></div>
+        <div class="stat small">
+          Key: <span class="mono">kensa_prefix</span><br>
+          Status: <span id="localStatus">-</span>
+        </div>
+        <p class="help">Semua form membaca override ini. Kalau override kosong, form akan fallback dari 図番 (6 digit pertama + <span class="mono">-</span>).</p>
+      </div>
+
+      <!-- SERVER CONTROLS -->
+      <div class="panel">
+        <h2>② Prefix di Server (GAS)</h2>
+        <div class="row">
+          <div>
+            <label>App Namespace (<span class="mono">APP_NS</span>)</label>
+            <input id="appNs" placeholder="例: mb46v / wy150v_x3 / nty3_100v" />
+          </div>
+          <div>
+            <label>Prefix (6 digit + -)</label>
+            <input id="serverPrefix" placeholder="例: 282520-" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Digits (1–8)</label>
+            <input id="digits" type="number" min="1" max="8" placeholder="例: 3 または 4" />
+          </div>
+          <div>
+            <label>Next 番号 (整数)</label>
+            <input id="nextNum" type="number" min="0" placeholder="例: 1 / 25 / 100" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <button id="btnFetch">Fetch getInfo</button>
+          <button id="btnSetDigits">Set Digits</button>
+          <button id="btnSetNext">Set Next</button>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button id="btnPeekNext">Cek nextSuffix (tanpa menulis)</button>
+          <button id="btnTakeNext">Ambil nextSuffix (simulasi assign)</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="stat">
+          <div>server key: <span id="serverKey" class="mono">-</span></div>
+          <div id="serverInfo">-</div>
         </div>
       </div>
     </div>
-  </div>
-</header>
 
-<main>
-  <section class="card" id="activeBox">
-    <h2 style="margin:4px 0">Prefix aktif untuk フォーム（6桁 + "-"）</h2>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
-      <input id="activePrefix" type="text" inputmode="numeric" placeholder="例: 282520-" style="flex:1; min-width:220px; padding:10px; border:1px solid var(--b); border-radius:10px">
-      <button id="btnSaveActive" class="btn">Simpan Prefix Aktif</button>
-      <span class="hint">Disimpan ke <code>localStorage.kensa_prefix</code>. Wajib <b>persis</b> 6 digit + 「-」 (contoh: <code>282520-</code>).</span>
-    </div>
-  </section>
-
-  <section class="card" style="margin-top:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-      <h2 style="margin:4px 0">Prefix list</h2>
-      <span id="count" class="pill"></span>
-    </div>
-    <div id="list" class="list"></div>
-    <div class="hint">
-      Daftar prefix disimpan <b>lokal</b> di browser (localStorage). Operasi <b>Info / Set桁 / Set次 / Issue / Hapus</b> memanggil GAS:
-      <code id="gasUrlShow"></code>.
-    </div>
-  </section>
-</main>
-
-<input id="fileImport" type="file" accept="application/json" style="display:none">
-
-<script>
-/* ================== KONFIG ================== */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxWxAa_dWQNoUPhWnkw3P22jgeW4vb44Z5ISuUyUWsAAroFzzE6iIVWMIpqqio6E5OgqA/exec'; 
-const STORE   = 'ADMIN_PREFIX_LIST_V2';
-const ADMIN_FLAG_KEY = 'kensa_admin';
-const PREFIX_KEY     = 'kensa_prefix';
-const LEGACY_PREFIX_KEYS = ['prefix','okuma_prefix','kensa_prefix_okuma'];
-
-/* ===== Admin gate ===== */
-function setAdmin(on){
-  document.querySelectorAll('.admin-only').forEach(el=> el.style.display = on ? '' : 'none');
-  if(on){ localStorage.setItem(ADMIN_FLAG_KEY,'1'); } else { localStorage.removeItem(ADMIN_FLAG_KEY); }
-  const b=document.getElementById('btnAdmin'); if(b) b.textContent = on ? '管理（ON）' : '管理';
-  const s=document.getElementById('admState'); if(s){ s.textContent = on? '管理: ON' : '管理: OFF'; s.className = 'pill ' + (on?'ok':'warn'); }
-}
-function isAdmin(){ return localStorage.getItem(ADMIN_FLAG_KEY)==='1'; }
-window.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('btnAdmin')?.addEventListener('click', ()=>{
-    if(isAdmin()){
-      if(confirm('Admin akan dimatikan. Lanjut?')) setAdmin(false);
-    }else{
-      const code = prompt('Admin code:');
-      const ADMIN_CODE = 'admin2025';
-      if(code===ADMIN_CODE) setAdmin(true); else alert('Kode tidak sesuai');
-    }
-  });
-});
-
-/* ===== Utils & API ===== */
-const S = v => String(v ?? '').trim();
-function isValid6(v){ return /^\d{6}-$/.test(S(v)); }
-function normalizeTo6(v){ const d = S(v).replace(/\D/g,''); return d.length >= 6 ? d.slice(0,6) + '-' : ''; }
-
-async function api(payload){
-  const r = await fetch(GAS_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect:'follow' });
-  if(!r.ok){ const t = await r.text().catch(()=> ''); throw new Error(`HTTP ${r.status} ${r.statusText} :: ${t.slice(0,200)}`); }
-  const text = await r.text(); try{ return JSON.parse(text); } catch{ throw new Error('Bad JSON: '+text.slice(0,200)); }
-}
-async function apiForms(p){ return api(p); } // sama endpoint
-
-function loadStore(){ try{ const arr = JSON.parse(localStorage.getItem(STORE)||'[]'); if(Array.isArray(arr)) return arr; }catch(e){} return []; }
-function saveStore(arr){ localStorage.setItem(STORE, JSON.stringify(arr)); }
-function toast(msg){ try{ console.log(msg); }catch(e){} alert(msg); }
-function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;'); }
-function escapeAttr(s){ return escapeHtml(s).replace(/\"/g,'&quot;'); }
-
-/* ===== Samples (opsional) ===== */
-function defaultSamples(){
-  return [
-    { prefix:'2742-20::274220-',        label:'Okuma MU6300V (2742-20)', digits:4 },
-    { prefix:'2743-20::274320-',        label:'Okuma MU6300V (2743-20)', digits:4 },
-    { prefix:'mb46v::282520-',          label:'2825-20 MB-46V', digits:4 }
-  ];
-}
-function seedIfEmpty(){ const data = loadStore(); if(data.length===0){ saveStore(defaultSamples()); } }
-
-/* ===== Active prefix box ===== */
-function migrateActivePrefix(){
-  if(!localStorage.getItem(PREFIX_KEY)){
-    for(const k of LEGACY_PREFIX_KEYS){
-      const v = localStorage.getItem(k);
-      if(v && v.trim()){ localStorage.setItem(PREFIX_KEY, v.trim()); break; }
-    }
-  }
-}
-function loadActive(){ return S(localStorage.getItem(PREFIX_KEY)||''); }
-function saveActive(v){ if(v) localStorage.setItem(PREFIX_KEY,S(v)); else localStorage.removeItem(PREFIX_KEY); }
-(function sanitizeStoredActive(){ const v = loadActive(); if(!isValid6(v)) localStorage.removeItem(PREFIX_KEY); })();
-
-/* ===== Render list (OK only) ===== */
-function render(){
-  const list = document.getElementById('list');
-  const RAW  = loadStore();
-  const data = RAW.filter(it => isValid6((String(it.prefix).split('::')[1] || '')));
-  document.getElementById('count').textContent = `${data.length} prefix (OK saja)`;
-  list.innerHTML = '';
-
-  if(!data.length){
-    list.innerHTML = '<div class="row" style="justify-content:center;color:#64748b">Tidak ada item OK. Tambah data / Sync.</div>';
-    return;
-  }
-
-  data.forEach((it)=>{
-    const idx = loadStore().findIndex(x=> x.prefix===it.prefix);
-    const row = document.createElement('div');
-    row.className = 'row';
-
-    const serialPref = String(it.prefix).split('::')[1] || '';
-    const valid = isValid6(serialPref);
-
-    row.innerHTML = `
-      <div class="prefix" title="APP_NS::SERIAL_PREFIX">${escapeHtml(it.prefix)}</div>
-      <input type="text" class="inpLabel" placeholder="Label / catatan" value="${escapeAttr(it.label||'')}">
-      <input type="number" class="inpNext" placeholder="Set 次番号" min="1" step="1" value="${escapeAttr(it.next||'')}">
-      <input type="number" class="inpDigits" placeholder="桁数" min="1" max="12" step="1" value="${escapeAttr(it.digits||'')}">
-      <span class="pill ${valid?'ok':'bad'}" title="Validasi 6桁+ハイフン">${valid?'OK':'NG'}</span>
-      <div class="btns">
-        <button class="btn btnUse">Gunakan ▶</button>
-        <button class="btn btnInfo admin-only">Info</button>
-        <button class="btn btnDigits admin-only">Set桁</button>
-        <button class="btn btnNext admin-only">Set次</button>
-        <button class="btn btnIssue admin-only" style="border-color:#fecaca;background:#fff5f5">Issue</button>
-
-        <!-- NEW: selalu muncul, hapus LOKAL saja -->
-        <button class="btn-icon btnDelLocal" title="Hapus dari daftar lokal (tidak ke server)">🗑️</button>
-
-        <!-- existing: hapus server + lokal (hanya saat Admin ON) -->
-        <button class="btn btnDel admin-only">Hapus</button>
+    <div class="panel" style="margin-top:16px;">
+      <h2>③ Opsional: Uji Lock</h2>
+      <div class="row">
+        <div><label>Client ID</label><input id="clientId" placeholder="kosongkan → auto UUID" /></div>
+        <div><label>TTL (detik)</label><input id="ttl" type="number" min="30" value="120" /></div>
       </div>
-    `;
-    list.appendChild(row);
+      <div class="row" style="margin-top:10px;">
+        <button id="btnAcquire">acquireLock</button>
+        <button id="btnExtend">extendLock</button>
+        <button id="btnRelease">releaseLock</button>
+      </div>
+      <div class="hr"></div>
+      <div class="stat" id="lockStat">-</div>
+    </div>
 
-    const inpLabel  = row.querySelector('.inpLabel');
-    const inpNext   = row.querySelector('.inpNext');
-    const inpDigits = row.querySelector('.inpDigits');
+    <p class="foot">Tips: Simpan file ini sebagai <span class="mono">prefix.html</span> di server / Google Drive, akses via browser yang sama dengan operator form.</p>
+  </div>
 
-    inpLabel.addEventListener('change', ()=>{ const d=loadStore(); d[idx].label=S(inpLabel.value); saveStore(d); });
-    inpNext.addEventListener('change',  ()=>{ const d=loadStore(); d[idx].next =S(inpNext.value);  saveStore(d); });
-    inpDigits.addEventListener('change',()=>{ const d=loadStore(); d[idx].digits=S(inpDigits.value);saveStore(d); });
+  <script>
+    /* ====== KONFIG ====== */
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzVgHHvdizqFzkejzMsCwrAmGtFvmkoUPJwQT_rtWi3Twsg6xoaGpT0IkvUIbe82Q90hA/exec'; // GANTI ke Web App URL server bersama
+    const ACTIVE_PREFIX_KEY = 'kensa_prefix';
 
-    row.querySelector('.btnUse').addEventListener('click', ()=>{
-      const parts = String(it.prefix).split('::');
-      let serialPrefix = parts[1] || parts[0] || '';
-      if(!isValid6(serialPrefix)){
-        const fixed = normalizeTo6(serialPrefix);
-        if(fixed){
-          if(confirm(`Prefix "${serialPrefix}" akan dinormalisasi menjadi "${fixed}". Gunakan ini?`)){
-            serialPrefix = fixed;
-          }else{
-            return;
-          }
-        }else{
-          alert('Format prefix tidak valid.\nForm mewajibkan 6桁+ハイフン（例: 282520-）');
-          return;
-        }
-      }
-      saveActive(serialPrefix);
-      document.getElementById('activePrefix').value = serialPrefix;
-      alert('Prefix aktif disimpan: '+serialPrefix+'\n(Form akan memakainya sebagai 図番 先頭桁)');
-    });
+    /* ====== UTILS ====== */
+    const $ = sel => document.querySelector(sel);
+    const validPrefix = p => /^\d{6}-$/.test((p||'').trim());
+    const serverKeyOf = (appNs, prefix) => `${(appNs||'').trim()}::${(prefix||'').trim()}`;
 
-    row.querySelector('.btnInfo').addEventListener('click', async ()=>{
-      try{
-        const res = await api({ action:'getInfo', prefix: it.prefix });
-        alert(`Prefix: ${it.prefix}\nLast: ${res.last}\nNext: ${res.next}\nDigits: ${res.digits ?? '(belum disetel)'}`);
-        if(res.digits && !inpDigits.value){ inpDigits.value = res.digits; const d=loadStore(); const j=d.findIndex(x=>x.prefix===it.prefix); d[j].digits=res.digits; saveStore(d); }
-      }catch(e){ toast('Gagal getInfo: '+e.message); }
-    });
-
-    row.querySelector('.btnDigits').addEventListener('click', async ()=>{
-      const dgt = parseInt(inpDigits.value,10); if(!(dgt>=1 && dgt<=12)){ toast('Masukkan桁数 1..12'); return; }
-      try{ const res = await api({ action:'setDigits', prefix: it.prefix, digits: dgt }); if(res && (res.ok||res.digits||res.result)){ toast('Set桁 OK'); } else { toast('Set桁 selesai'); } }
-      catch(e){ toast('Gagal setDigits: '+e.message); }
-    });
-
-    row.querySelector('.btnNext').addEventListener('click', async ()=>{
-      const n = parseInt(inpNext.value,10); if(!(n>=1)){ toast('Masukkan 次番号 minimal 1'); return; }
-      try{ const res = await api({ action:'setNext', prefix: it.prefix, next: n }); if(res && res.ok){ toast('Set次 OK'); } else { toast('Set次 selesai'); } }
-      catch(e){ toast('Gagal setNext: '+e.message); }
-    });
-
-    row.querySelector('.btnIssue').addEventListener('click', async ()=>{
-      try{
-        const res = await api({ action:'nextSuffix', prefix: it.prefix });
-        let pad = parseInt(inpDigits.value||'0',10)||0;
-        if(!pad){
-          const info = await api({ action:'getInfo', prefix: it.prefix });
-          pad = parseInt(info.digits||'0',10)||0;
-          if(pad){ inpDigits.value = pad; const d=loadStore(); const j=d.findIndex(x=>x.prefix===it.prefix); d[j].digits=pad; saveStore(d); }
-        }
-        alert(`Issued: ${String(res.suffix).padStart(pad,'0')}`);
-      }catch(e){ toast('Gagal issue: '+e.message); }
-    });
-
-    // NEW: hapus lokal (tanpa server)
-    row.querySelector('.btnDelLocal').addEventListener('click', ()=>{
-      if(!confirm(`Hapus dari daftar lokal?\n${it.prefix}\n(Data server tidak diubah)`)) return;
-      const d=loadStore(); const j=d.findIndex(x=>x.prefix===it.prefix);
-      if(j>=0){ d.splice(j,1); saveStore(d); render(); toast('Dihapus (lokal).'); }
-    });
-
-    // existing: hapus server + lokal (admin)
-    row.querySelector('.btnDel').addEventListener('click', async ()=>{
-      if(!confirm(`Hapus prefix ini di SERVER dan daftar lokal?\n${it.prefix}\n(counter & digits akan dihapus di server)`)) return;
-      try{ await api({ action:'deletePrefix', prefix: it.prefix }); }
-      catch(e){ if(!confirm('Gagal hapus di server ('+(e.message||e)+').\nTetap hapus dari daftar lokal?')) return; }
-      const d=loadStore(); const j=d.findIndex(x=>x.prefix===it.prefix); d.splice(j,1); saveStore(d); render(); toast('Dihapus.');
-    });
-  });
-
-  document.querySelectorAll('.admin-only').forEach(el=> el.style.display = isAdmin()? '' : 'none');
-}
-
-/* ===== Toolbar actions ===== */
-document.getElementById('btnAdd').addEventListener('click', ()=>{
-  const full = prompt('Masukkan FULL prefix (format: APP_NS::SERIAL_PREFIX)\ncontoh: mb46v::282520-'); if(!full) return;
-  const label = prompt('Label/Note (opsional):',''); const data = loadStore();
-  if(data.some(x=>x.prefix===full)){ toast('Prefix sudah ada di daftar'); return; }
-  data.push({ prefix: full, label: S(label) }); saveStore(data); render();
-});
-
-document.getElementById('btnSample').addEventListener('click', ()=>{
-  const local = loadStore(); const merged = [...local];
-  defaultSamples().forEach(s=>{ if(!merged.some(x=>x.prefix===s.prefix)) merged.push(s); });
-  saveStore(merged); render(); toast('Contoh prefix ditambahkan.');
-});
-
-document.getElementById('btnSync').addEventListener('click', ()=>{ syncFromServer(); });
-async function syncFromServer(){
-  try{
-    const res = await api({ action:'listPrefixes' }); // {items:[{prefix,last,next,digits}]}
-    if(!res || !Array.isArray(res.items)){ toast('Tidak ada data dari server'); return; }
-    const local = loadStore();
-    res.items.forEach(it=>{
-      if(!local.some(x=>x.prefix===it.prefix)) local.push({ prefix: it.prefix, label:'(server)', digits: it.digits||'' });
-      else { const idx = local.findIndex(x=>x.prefix===it.prefix); if(!local[idx].digits && it.digits) local[idx].digits = it.digits; }
-    });
-    saveStore(local); render(); toast(`Sync Server OK: ${res.items.length} item`);
-  }catch(e){ toast('Gagal sync server: '+e.message); }
-}
-
-/* === NEW: Sync Forms (Sheet) -> inject ke daftar lokal === */
-document.getElementById('btnSyncForms').addEventListener('click', async ()=>{
-  try{
-    const res = await apiForms({ action:'listForms' });
-    const forms = (res.items || []).filter(x => x.enabled !== false);
-    const local = loadStore();
-    let added = 0, patched = 0;
-
-    // render menu dinamis juga
-    renderFormsMenu(forms);
-
-    forms.forEach(it=>{
-      const sp = String(it.serial_prefix||'').trim();
-      if(!sp) return;
-      const full = `${it.id}::${sp}`; // APP_NS::SERIAL_PREFIX
-      const i = local.findIndex(x => x.prefix === full);
-      if(i < 0){
-        local.push({ prefix: full, label: it.title || it.id, digits: it.digits || '' });
-        added++;
-      }else{
-        if(!local[i].label && it.title) local[i].label = it.title;
-        if(!local[i].digits && it.digits) local[i].digits = it.digits;
-        patched++;
-      }
-    });
-
-    saveStore(local); render();
-    toast(`Sync Forms OK: +${added} baru, ${patched} diperbarui`);
-  }catch(e){
-    toast('Gagal Sync Forms: ' + (e.message||e));
-  }
-});
-
-/* Refresh digits by getInfo (optional) */
-document.getElementById('btnRefresh').addEventListener('click', async ()=>{
-  const data = loadStore(); if(!data.length) return;
-  try{
-    for(const it of data){
-      try{
-        const res = await api({ action:'getInfo', prefix: it.prefix });
-        if(res.digits && !it.digits){ it.digits = res.digits; }
-      }catch(e){ console.warn('getInfo error', it.prefix, e); }
+    async function apiGAS(body){
+      const res = await fetch(GAS_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return await res.json();
     }
-    saveStore(data); render(); toast('Refresh selesai.');
-  }catch(e){ toast('Gagal refresh: '+e.message); }
-});
 
-document.getElementById('btnExport').addEventListener('click', ()=>{
-  const blob = new Blob([JSON.stringify(loadStore(),null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), { href:url, download:'admin-prefix-backup.json' });
-  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
-document.getElementById('btnImport').addEventListener('click', ()=>{ document.getElementById('fileImport').click(); });
-document.getElementById('fileImport').addEventListener('change', async (ev)=>{
-  const f = ev.target.files[0]; if(!f) return;
-  try{
-    const text = await f.text(); const arr = JSON.parse(text);
-    if(!Array.isArray(arr)) throw new Error('Format tidak valid');
-    saveStore(arr); render(); toast('Import OK');
-  }catch(e){ toast('Gagal import: '+e.message); }
-  ev.target.value='';
-});
-
-/* Purge NG (lokal) */
-document.getElementById('btnPurgeNg').addEventListener('click', ()=>{
-  const all  = loadStore();
-  const keep = all.filter(it => isValid6((String(it.prefix).split('::')[1] || '')));
-  const removed = all.length - keep.length;
-  if(!removed){ toast('Tidak ada item NG.'); return; }
-  if(confirm(`Hapus permanen ${removed} item NG dari daftar lokal?`)){
-    saveStore(keep);
-    render();
-    toast(`Dihapus: ${removed} item NG`);
-  }
-});
-
-/* Active input auto-format */
-const activeInput = document.getElementById('activePrefix');
-activeInput.addEventListener('input', ()=>{
-  const d = activeInput.value.replace(/\D/g,'').slice(0,6);
-  activeInput.value = d.length===6 ? (d+'-') : d;
-});
-
-/* ================ MENU (dinamis dari listForms) ================ */
-function renderFormsMenu(items){
-  const m = document.getElementById('menu'); if(!m) return;
-  m.querySelectorAll('[data-role="dyn"]').forEach(x => x.remove());
-
-  // Top
-  const top = document.createElement('a');
-  top.setAttribute('role','menuitem'); top.setAttribute('data-role','dyn');
-  top.href = './'; top.textContent = '🏠 トップ';
-  m.appendChild(top);
-
-  (items || []).forEach(it=>{
-    const a = document.createElement('a');
-    a.setAttribute('role','menuitem'); a.setAttribute('data-role','dyn');
-    a.href = it.url || '#';
-    a.textContent = `📄 ${it.title || it.id}`;
-    m.appendChild(a);
-  });
-
-  // NEW: Clear semua lokal
-  const clr = document.createElement('button');
-  clr.setAttribute('role','menuitem'); clr.setAttribute('data-role','dyn');
-  clr.textContent = '🧹 Clear semua (lokal)';
-  clr.addEventListener('click', ()=>{ clearAllLocal(); });
-  m.appendChild(clr);
-}
-
-/* NEW: helper reset total lokal */
-function clearAllLocal(){
-  if(!confirm('Hapus SEMUA prefix dari penyimpanan lokal?')) return;
-  saveStore([]); render(); toast('Semua prefix lokal dihapus.');
-}
-
-/* ================ BOOT ================= */
-async function pingServer(){
-  document.getElementById('gasUrlShow').textContent = GAS_URL;
-  try{
-    const r = await fetch(GAS_URL, { method:'GET', redirect:'follow' });
-    const txt = await r.text();
-    const ok = /"ok"\s*:\s*true/.test(txt);
-    const pill = document.getElementById('ping');
-    pill.textContent = ok ? 'backend: OK' : 'backend: ?';
-    pill.className = 'pill ' + (ok ? 'ok' : 'warn');
-  }catch(e){
-    const pill = document.getElementById('ping');
-    pill.textContent = 'backend: NG';
-    pill.className = 'pill bad';
-  }
-}
-
-window.addEventListener('DOMContentLoaded', async ()=>{
-  // burger menu toggle
-  const menuBtn = document.getElementById('menuBtn');
-  const menu    = document.getElementById('menu');
-  menuBtn?.addEventListener('click', ()=> menu.classList.toggle('open'));
-  document.addEventListener('click', (e)=>{
-    if(!menu.contains(e.target) && e.target !== menuBtn){ menu.classList.remove('open'); }
-  });
-
-  setAdmin(isAdmin());
-  migrateActivePrefix();
-  const current = loadActive();
-  document.getElementById('activePrefix').value = isValid6(current) ? current : '';
-
-  document.getElementById('btnSaveActive').addEventListener('click', ()=>{
-    let v = S(document.getElementById('activePrefix').value);
-    if(!isValid6(v)){
-      const fixed = normalizeTo6(v);
-      if(fixed){
-        if(confirm(`Prefix "${v}" akan dinormalisasi menjadi "${fixed}". Simpan?`)){
-          v = fixed;
-        }else{
-          alert('Format wajib 6桁+ハイフン（例: 282520-）'); return;
-        }
-      }else{
-        alert('Format wajib 6桁+ハイフン（例: 282520-）'); return;
-      }
+    function updateLocalStatus(){
+      const cur = localStorage.getItem(ACTIVE_PREFIX_KEY) || '';
+      const ok = validPrefix(cur);
+      $('#localStatus').innerHTML = ok
+        ? `<span class="ok">aktif</span> <span class="mono">${cur}</span>`
+        : (cur ? `<span class="warn">format salah</span> <span class="mono">${cur}</span>` : '<span class="warn">tidak ada override</span>');
     }
-    saveActive(v);
-    alert('Disimpan: '+v+' \n(Form akan memakainya sebagai 図番 先頭桁)');
-  });
 
-  seedIfEmpty();
-  render();
-  pingServer();
+    /* ====== LOCAL OVERRIDE ====== */
+    $('#btnApplyLocal').addEventListener('click', ()=>{
+      const p = ($('#overridePrefix').value || '').trim();
+      if(!validPrefix(p)){ alert('Format prefix harus 6 digit + "-" (contoh: 282520-)'); return; }
+      localStorage.setItem(ACTIVE_PREFIX_KEY, p);
+      updateLocalStatus();
+      alert('Override diset. Semua form di browser ini akan memakai prefix tersebut.');
+    });
 
-  // Tarik menu forms saat load (biar langsung muncul)
-  try{
-    const res = await apiForms({ action:'listForms' });
-    renderFormsMenu((res.items||[]).filter(x=>x.enabled!==false));
-  }catch(e){ /* silent */ }
-});
-</script>
+    $('#btnClearLocal').addEventListener('click', ()=>{
+      localStorage.removeItem(ACTIVE_PREFIX_KEY);
+      updateLocalStatus();
+      alert('Override dihapus. Form akan fallback dari 図番.');
+    });
+
+    $('#btnBroadcast').addEventListener('click', ()=>{
+      // tulis ulang nilainya agar "storage" event mem-broadcast ke tab lain
+      const cur = localStorage.getItem(ACTIVE_PREFIX_KEY);
+      if(cur==null){ alert('Tidak ada override untuk dibroadcast.'); return; }
+      localStorage.setItem(ACTIVE_PREFIX_KEY, cur);
+      alert('Broadcast dikirim lewat storage event.');
+    });
+
+    /* ====== SERVER SIDE (digits / next / info) ====== */
+    $('#btnFetch').addEventListener('click', async ()=>{
+      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
+      if(!app || !validPrefix(pref)){ alert('Isi APP_NS dan Prefix (6 digit + "-").'); return; }
+      const key = serverKeyOf(app, pref);
+      $('#serverKey').textContent = key;
+
+      const info = await apiGAS({ action:'getInfo', prefix: key });
+      $('#serverInfo').innerHTML = `
+        <div>digits: <span class="mono">${info?.digits ?? '-'}</span></div>
+        <div>next  : <span class="mono">${info?.next ?? '-'}</span></div>
+        <div>found : <span class="${info?.digits!=null||info?.next!=null?'ok':'warn'}">${(info?.digits!=null||info?.next!=null)?'ya':'tidak'}</span></div>`;
+      if(info?.digits!=null) $('#digits').value = info.digits;
+      if(info?.next!=null) $('#nextNum').value = info.next;
+    });
+
+    $('#btnSetDigits').addEventListener('click', async ()=>{
+      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
+      const n = parseInt($('#digits').value, 10);
+      if(!app || !validPrefix(pref) || !(n>=1 && n<=8)){ alert('APP_NS / Prefix / Digits (1..8) harus valid.'); return; }
+      const key = serverKeyOf(app, pref);
+      await apiGAS({ action:'setDigits', prefix: key, digits: n });
+      alert('OK: digits di-update.'); $('#btnFetch').click();
+    });
+
+    $('#btnSetNext').addEventListener('click', async ()=>{
+      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
+      const n = parseInt($('#nextNum').value, 10);
+      if(!app || !validPrefix(pref) || !(n>=0)){ alert('APP_NS / Prefix / Next (>=0) harus valid.'); return; }
+      const key = serverKeyOf(app, pref);
+      await apiGAS({ action:'setNext', prefix: key, next: n });
+      alert('OK: next di-update.'); $('#btnFetch').click();
+    });
+
+    $('#btnPeekNext').addEventListener('click', async ()=>{
+      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
+      if(!app || !validPrefix(pref)){ alert('APP_NS / Prefix harus valid.'); return; }
+      const key = serverKeyOf(app, pref);
+      const r = await apiGAS({ action:'getInfo', prefix: key });
+      alert('next sekarang: ' + (r?.next ?? '(belum ada)'));
+    });
+
+    $('#btnTakeNext').addEventListener('click', async ()=>{
+      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
+      if(!app || !validPrefix(pref)){ alert('APP_NS / Prefix harus valid.'); return; }
+      const key = serverKeyOf(app, pref);
+      const r = await apiGAS({ action:'nextSuffix', prefix: key }); // server increment atomik
+      alert('ambil nomor → ' + (r?.suffix ?? '(gagal)'));
+      $('#btnFetch').click();
+    });
+
+    /* ====== LOCK TEST (opsional) ====== */
+    let lockId = null;
+    function ensureClientId(){
+      let id = ($('#clientId').value||'').trim();
+      if(!id){ id = crypto.randomUUID(); $('#clientId').value = id; }
+      return id;
+    }
+    function showLock(m){ $('#lockStat').textContent = JSON.stringify(m||{}, null, 2); }
+
+    $('#btnAcquire').addEventListener('click', async ()=>{
+      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
+      if(!app || !validPrefix(pref)){ alert('APP_NS / Prefix harus valid.'); return; }
+      const key = serverKeyOf(app, pref);
+      const ttl = parseInt($('#ttl').value||'120',10);
+      const r = await apiGAS({ action:'acquireLock', prefix: key, clientId: ensureClientId(), ttlSec: ttl });
+      if(r?.ok){ lockId = r.lockId; showLock(r); alert('Lock ok.'); } else { showLock(r); alert('Lock gagal.'); }
+    });
+    $('#btnExtend').addEventListener('click', async ()=>{
+      if(!lockId){ alert('Belum acquire lock.'); return; }
+      const ttl = parseInt($('#ttl').value||'120',10);
+      const r = await apiGAS({ action:'extendLock', lockId, prefix: '', clientId: ensureClientId(), ttlSec: ttl });
+      showLock(r); alert('Extend dikirim.');
+    });
+    $('#btnRelease').addEventListener('click', async ()=>{
+      if(!lockId){ alert('Belum acquire lock.'); return; }
+      const r = await apiGAS({ action:'releaseLock', lockId, clientId: ensureClientId() });
+      showLock(r); lockId=null; alert('Release dikirim.');
+    });
+
+    /* ====== INIT ====== */
+    updateLocalStatus();
+  </script>
 </body>
 </html>
