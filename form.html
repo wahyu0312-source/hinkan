@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>出荷検査成績書</title>
+
+<style>
+  :root{
+    --bg:#f6f7fb; --panel:#fff; --ink:#0f172a; --muted:#64748b; --border:#e5e7eb; --ring:#c7d2fe;
+    --accent:#2563eb; --accent-2:#1d4ed8; --ok:#16a34a; --ng:#b91c1c;
+    --radius-xl:22px; --radius:12px; --shadow-1:0 12px 30px rgba(15,23,42,.08); --shadow-2:0 30px 60px rgba(15,23,42,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP","Yu Gothic",sans-serif;
+    background:
+      radial-gradient(1100px 540px at -12% -12%, #c7d2fe 0%, transparent 60%),
+      radial-gradient(820px 460px at 112% -6%, #bae6fd 0%, transparent 55%),
+      linear-gradient(120deg,#f8fafc,var(--bg));
+  }
+  a{color:inherit; text-decoration:none}
+
+  .app{display:grid;grid-template-rows:64px 1fr;grid-template-areas:"header" "main";min-height:100vh}
+  header{grid-area:header;position:sticky;top:0;z-index:60;backdrop-filter:blur(12px);background:#ffffffc7;border-bottom:1px solid var(--border)}
+  .header-wrap{height:64px;max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand img{height:36px}
+  .brand .ttl{font-weight:800}
+
+  .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn{height:34px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:#fff;display:inline-flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none}
+  .btn.primary{background:var(--accent);color:#fff;border-color:#1e40af;box-shadow:0 6px 16px rgba(37,99,235,.25)}
+  .btn:hover{border-color:var(--ring)}
+
+  .burger{display:none;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}
+  .burger:active{transform:scale(.98)}
+
+  .edge-hotspot{position:fixed;left:0;top:64px;width:12px;height:calc(100vh - 64px);z-index:70}
+  .hover-side{position:fixed;left:0;top:64px;height:calc(100vh - 64px);width:260px;padding:14px 12px;overflow:auto;background:var(--panel);border-right:1px solid var(--border);box-shadow:var(--shadow-1);transform:translateX(-100%);transition:transform .22s ease;z-index:71}
+  .hover-side.open{transform:translateX(0)}
+  .hover-side h3{margin:4px 8px 10px;font-size:12px;letter-spacing:.08em;color:#6b7280;text-transform:uppercase}
+  .navlist{display:grid;gap:4px}
+  .link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--ink)}
+  .link small{color:var(--muted)}
+  .link:hover{background:#f1f5ff}
+  .ico{width:22px;text-align:center}
+
+  .drawer{position:fixed;inset:0;z-index:70;display:none}
+  .drawer.open{display:block}
+  .drawer .backdrop{position:absolute;inset:0;background:#0006}
+  .drawer .panel{position:absolute;top:0;left:0;height:100%;width:min(86%,320px);background:#fff;border-right:1px solid var(--border);box-shadow:var(--shadow-2);padding:14px 12px;overflow:auto;transform:translateX(-100%);transition:transform .25s ease}
+  .drawer.open .panel{transform:translateX(0)}
+  .drawer .close{position:absolute;right:10px;top:10px;border:0;background:#f1f5f9;border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer}
+
+  main{grid-area:main;max-width:1400px;margin:0 auto;padding:22px 20px 96px}
+  .page-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:14px}
+  .h1{font-size:22px;margin:0}
+  .small{font-size:12px;color:var(--muted)}
+
+  .panel{background:#fff;border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-2);padding:18px}
+  .panel + .panel{margin-top:16px}
+
+  .lock{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .input{height:38px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--ink);outline:none}
+  .input:focus{border-color:var(--ring);box-shadow:0 0 0 3px #93c5fd55}
+  .lock .msg{min-width:80px;font-weight:700}
+  .hidden{display:none !important}
+
+  .searchbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .searchbar .search{flex:1;min-width:220px;height:40px;padding:0 14px;border:2px solid #0b12221a;border-radius:9999px;outline:none;background:#fff}
+
+  .folder{background:#fff;border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden}
+  .folder-head{padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#f9fafb;font-weight:800;border:0;width:100%;text-align:left}
+  .folder-head .caret{transition:transform .2s}
+  .folder-body{display:none;padding:12px}
+  .subfolder{margin-bottom:10px}
+  .subfolder strong{display:block;margin-bottom:6px}
+  .linkfile{display:block;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;text-decoration:none;color:var(--ink);background:#fff}
+  .linkfile span{display:block;font-size:12px;color:var(--muted)}
+  .linkfile:hover{background:#f0f9ff;border-color:#93c5fd}
+
+  .marquee{position:fixed;left:20px;right:20px;bottom:20px;z-index:30;background:var(--accent);color:#fff;font-weight:800;border-radius:12px;box-shadow:var(--shadow-1);white-space:nowrap;overflow:hidden}
+  .marquee span{display:inline-block;padding:8px 0 8px 100%;animation:marquee 18s linear infinite}
+  @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+  .footer{position:fixed;bottom:0;left:0;right:0;z-index:31;text-align:center;font-size:12px;color:var(--muted);background:#f1f5f9;padding:4px 0;border-top:1px solid var(--border)}
+
+  @media (max-width:900px){
+    .top-actions{display:none}
+    .burger{display:inline-flex}
+    .edge-hotspot,.hover-side{display:none}
+  }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="header-wrap">
+      <button id="btnBurger" class="burger" aria-label="メニュー"><span>☰</span></button>
+      <div class="brand">
+        <img src="tsh.png" alt="TSH" onerror="this.style.display='none'">
+        <strong class="ttl">品質管理生産技術</strong>
+      </div>
+
+      <nav class="top-actions" aria-label="Top navigation">
+        <a class="btn" href="./index.html">🏠 ホーム</a>
+        <a class="btn primary" href="./forms.html" aria-current="page">📄 出荷検査成績書</a>
+        <a class="btn" href="./sagyoutejunsho.html">📝 作業手順書</a>
+        <a class="btn" href="./charts.html">📈 チャート</a>
+        <a class="btn" href="./quality.html">🔎 品質情報</a>
+        <!-- NEW: Admin Prefix always visible -->
+        <a class="btn" href="./admin-prefix.html">🔑 Admin Prefix</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <div class="page-head">
+      <h1 class="h1">出荷検査成績書フォルダ</h1>
+      <span class="small">必要に応じて検索／フィルタしてください</span>
+    </div>
+
+    <!-- Password Gate (content only; keep) -->
+    <section id="lock" class="panel" aria-labelledby="lock-title">
+      <h2 id="lock-title" class="small" style="margin:0 0 10px">アクセス保護</h2>
+      <div class="lock">
+        <input id="pwd" class="input" type="password" placeholder="パスワード" autocomplete="current-password" aria-label="パスワード">
+        <button id="btnToggle" class="btn" type="button" aria-controls="pwd" aria-pressed="false">表示</button>
+        <button id="btnUnlock" class="btn" type="button">確定</button>
+        <span id="msg" class="msg"></span>
+      </div>
+    </section>
+
+    <!-- Search -->
+    <section id="searchWrap" class="panel hidden" aria-label="検索パネル">
+      <div class="searchbar">
+        <input id="q" class="search" type="search" placeholder="検索（顧客名／サブフォルダ／フォーム名／説明）" aria-label="検索語">
+        <button id="btnSearch" class="btn" type="button">検索</button>
+        <button id="btnReset"  class="btn" type="button">リセット</button>
+        <span id="hit" class="small" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <!-- Folders -->
+    <section id="foldersPanel" class="panel hidden">
+      <div id="folders"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== Hover Sidebar (desktop) ===== -->
+<div id="edgeHotspot" class="edge-hotspot" aria-hidden="true"></div>
+<aside id="hoverSide" class="hover-side" aria-label="Pages">
+  <h3>Pages</h3>
+  <div class="navlist">
+    <a class="link" href="./index.html"><span class="ico">🏠</span><strong>ホーム</strong><small>Dashboard</small></a>
+    <a class="link" href="./forms.html"><span class="ico">📄</span><strong>出荷検査成績書</strong></a>
+    <a class="link" href="./sagyoutejunsho.html"><span class="ico">📝</span><strong>作業手順書</strong></a>
+    <a class="link" href="./charts.html"><span class="ico">📈</span><strong>チャート</strong></a>
+    <a class="link" href="./quality.html"><span class="ico">🔎</span><strong>品質情報</strong></a>
+    <!-- NEW -->
+    <a class="link" href="./admin-prefix.html"><span class="ico">🔑</span><strong>Admin Prefix</strong><small>6桁プレフィックス管理</small></a>
+  </div>
+</aside>
+
+<!-- ===== Drawer (mobile) ===== -->
+<div id="drawer" class="drawer" aria-hidden="true">
+  <div class="backdrop" data-close></div>
+  <aside class="panel">
+    <button class="close" data-close>✕</button>
+    <div class="side-card" style="box-shadow:none;border:0;padding-top:30px">
+      <h3>Pages</h3>
+      <div class="navlist">
+        <a class="link" href="./index.html"><span class="ico">🏠</span><strong>ホーム</strong></a>
+        <a class="link" href="./forms.html"><span class="ico">📄</span><strong>出荷検査成績書</strong></a>
+        <a class="link" href="./sagyoutejunsho.html"><span class="ico">📝</span><strong>作業手順書</strong></a>
+        <a class="link" href="./charts.html"><span class="ico">📈</span><strong>チャート</strong></a>
+        <a class="link" href="./quality.html"><span class="ico">🔎</span><strong>品質情報</strong></a>
+        <!-- NEW -->
+        <a class="link" href="./admin-prefix.html"><span class="ico">🔑</span><strong>Admin Prefix</strong></a>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="marquee"><span>⚙️ 品質管理生産技術ポータルへようこそ ｜ 本日も安全第一でお願いします ｜ 水分補給して下さいお願い致します</span></div>
+<div class="footer">Design by Wahyu</div>
+
+<script>
+  /* ================= Drawer (burger) ================= */
+  const drawer = document.getElementById('drawer');
+  const btnBurger = document.getElementById('btnBurger');
+  btnBurger?.addEventListener('click', ()=>{ drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false'); });
+  drawer?.addEventListener('click', (e)=>{ if(e.target.hasAttribute('data-close')){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); } });
+
+  /* ================= Password lock (content only) ================= */
+  const PASSWORD = "kensa2025";
+
+  function getJSON(key, fallback){
+    try{
+      const val = localStorage.getItem(key);
+      if (val === null || val === '') return fallback;
+      return JSON.parse(val);
+    }catch(e){ localStorage.removeItem(key); return fallback; }
+  }
+  const S = s=>String(s??'').trim();
+
+  const DATA = [
+    {customer:"オークマ株式会社",folders:[
+      {name:"Y軸",links:[
+        {label:"2825-20",desc:"MB46V Y軸",url:"https://wahyu0312-source.github.io/okuma46/"},
+        {label:"2835-20",desc:"MB56V Y軸",url:"https://wahyu0312-source.github.io/mb56/"},
+        {label:"2023-20",desc:"MB66V Y軸",url:"https://wahyu0312-source.github.io/mb66v/"}
+      ]},
+      {name:"X軸",links:[
+        {label:"330380V",desc:"MB80V-3303",url:"https://wahyu0312-source.github.io/330380v/"},
+        {label:"330580V",desc:"MB80V-33035",url:"https://wahyu0312-source.github.io/330580v/"},
+        {label:"2742-20",desc:"MU6300V-2742",url:"https://wahyu0312-source.github.io/2742-20/"},
+        {label:"2743-20",desc:"MU6300V-2743",url:"https://wahyu0312-source.github.io/2743-20/"}
+      ]}
+    ]},
+    {customer:"中村留株式会社",folders:[
+      {name:"WYプロテクター",links:[
+        {label:"3596-70",desc:"WY-150V X3 プロテクター",url:"https://wahyu0312-source.github.io/359670X3150V/"}
+      ]},
+      {name:"NTY3プロテクター",links:[
+        {label:"3555-71",desc:"NTY3-100V X2 プロテクター",url:"https://wahyu0312-source.github.io/3555-71tomei/"}
+      ]}
+    ]}
+  ];
+
+  const elLock = document.getElementById('lock');
+  const elFoldersPanel = document.getElementById('foldersPanel');
+  const elFolders = document.getElementById('folders');
+  const elSearchWrap = document.getElementById('searchWrap');
+  const elPwd = document.getElementById('pwd');
+  const elMsg = document.getElementById('msg');
+  const elQ = document.getElementById('q');
+  const elHit = document.getElementById('hit');
+  const btnSearch = document.getElementById('btnSearch');
+  const btnReset = document.getElementById('btnReset');
+  const btnToggle = document.getElementById('btnToggle');
+  const btnUnlock = document.getElementById('btnUnlock');
+
+  let lastQuery = "";
+  let openCustomers = new Set();
+
+  (function init(){
+    elPwd.addEventListener('keydown', e => { if (e.key === "Enter") unlock(); });
+    elQ.addEventListener('keydown',  e => { if (e.key === "Enter") search(); });
+
+    btnUnlock.addEventListener('click', unlock);
+    btnSearch.addEventListener('click', search);
+    btnReset.addEventListener('click', resetView);
+
+    btnToggle.addEventListener('click', () => {
+      const show = elPwd.type === 'password';
+      elPwd.type = show ? 'text' : 'password';
+      btnToggle.textContent = show ? '非表示' : '表示';
+      btnToggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+    });
+
+    elPwd.addEventListener('input', () => {
+      if (!elPwd.value) { elMsg.textContent = ''; return; }
+      const ok = elPwd.value === PASSWORD;
+      elMsg.textContent = ok ? '✓ 正しい' : '× 違います';
+      elMsg.style.color = ok ? 'var(--ok)' : 'var(--ng)';
+    });
+
+    const unlocked = localStorage.getItem('kensa_unlocked') === '1';
+    const savedQuery = localStorage.getItem('kensa_query') || "";
+    const savedOpen = getJSON('kensa_open', []);
+
+    if (unlocked) {
+      elLock.classList.add('hidden');
+      elFoldersPanel.classList.remove('hidden');
+      elSearchWrap.classList.remove('hidden');
+
+      elQ.value = savedQuery;
+      lastQuery = (savedQuery || "").trim().toLowerCase();
+      openCustomers = new Set(savedOpen);
+      render(DATA);
+    }
+  })();
+
+  function unlock(){
+    if (elPwd.value !== PASSWORD) { elMsg.textContent = '× 違います'; elMsg.style.color = 'var(--ng)'; return; }
+    elMsg.textContent = '✓ 正しい'; elMsg.style.color = 'var(--ok)';
+    elLock.classList.add('hidden');
+    elFoldersPanel.classList.remove('hidden');
+    elSearchWrap.classList.remove('hidden');
+    localStorage.setItem('kensa_unlocked','1');
+    render(DATA);
+  }
+
+  function search(){
+    lastQuery = (elQ.value || "").trim().toLowerCase();
+    localStorage.setItem('kensa_query', elQ.value || "");
+    openCustomers.clear();
+    render(DATA);
+  }
+
+  function resetView(){
+    elQ.value = ""; lastQuery = ""; openCustomers.clear();
+    localStorage.removeItem('kensa_query'); localStorage.removeItem('kensa_open');
+    render(DATA);
+    [...document.querySelectorAll('.folder-body')].forEach(b => b.style.display = 'none');
+    [...document.querySelectorAll('.caret')].forEach(c => c.style.transform='rotate(0deg)');
+  }
+
+  function render(src){
+    elFolders.innerHTML = "";
+    let hits = 0;
+
+    src.forEach(c=>{
+      const wrap = document.createElement('div');
+      wrap.className = "folder";
+
+      const head = document.createElement('button');
+      head.className = "folder-head";
+      head.type = "button";
+      head.setAttribute('aria-expanded', 'false');
+      head.innerHTML = `<span>${c.customer}</span><span class="caret">▾</span>`;
+
+      const body = document.createElement('div');
+      body.className = "folder-body";
+
+      let customerHasHit = false;
+
+      c.folders.forEach(sf=>{
+        const sfDiv = document.createElement('div');
+        sfDiv.className = "subfolder";
+        sfDiv.innerHTML = `<strong>${sf.name}</strong>`;
+
+        sf.links.forEach(l=>{
+          const hay = `${c.customer} ${sf.name} ${l.label} ${l.desc}`.toLowerCase();
+          if (lastQuery && !hay.includes(lastQuery)) return;
+
+          const a = document.createElement('a');
+          a.className = "linkfile";
+          a.href = l.url || "#";
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.innerHTML = `${l.label}<span>${l.desc || ""}</span>`;
+
+          a.addEventListener('click', (e) => {
+            if (!l.url || l.url === '#') {
+              e.preventDefault();
+              alert('リンク未設定です。正しいURLを入力してください。');
+            }
+          });
+
+          sfDiv.appendChild(a);
+          hits++; customerHasHit = true;
+        });
+
+        if (sfDiv.querySelector('.linkfile')) body.appendChild(sfDiv);
+      });
+
+      const shouldOpen = lastQuery ? customerHasHit : openCustomers.has(c.customer);
+      body.style.display = shouldOpen ? 'block' : 'none';
+      head.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      head.querySelector('.caret').style.transform = shouldOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+      if (shouldOpen && !lastQuery) openCustomers.add(c.customer);
+
+      head.addEventListener('click', ()=>{
+        const nowOpen = body.style.display === 'block';
+        body.style.display = nowOpen ? 'none' : 'block';
+        head.setAttribute('aria-expanded', nowOpen ? 'false' : 'true');
+        head.querySelector('.caret').style.transform = nowOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+        if (!lastQuery) {
+          if (nowOpen) openCustomers.delete(c.customer);
+          else openCustomers.add(c.customer);
+          localStorage.setItem('kensa_open', JSON.stringify([...openCustomers]));
+        }
+      });
+
+      if (body.children.length > 0){
+        wrap.appendChild(head);
+        wrap.appendChild(body);
+        elFolders.appendChild(wrap);
+      }
+    });
+
+    elHit.textContent = hits ? `ヒット: ${hits}` : "該当なし";
+
+    if (!lastQuery) {
+      [...elFolders.querySelectorAll('.folder-body')].forEach(b => b.style.display = 'none');
+      [...elFolders.querySelectorAll('.caret')].forEach(c => c.style.transform='rotate(0deg)');
+    }
+  }
+
+  /* ===== Edge-hover sidebar (desktop) ===== */
+  const hotspot = document.getElementById('edgeHotspot');
+  const side = document.getElementById('hoverSide');
+  let hoverTimer=null;
+  hotspot?.addEventListener('mouseenter', ()=>{
+    clearTimeout(hoverTimer);
+    side.classList.add('open');
+  });
+  side?.addEventListener('mouseleave', ()=>{
+    hoverTimer=setTimeout(()=>side.classList.remove('open'), 180);
+  });
+</script>
+</body>
+</html>
