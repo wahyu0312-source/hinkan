@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Serial Admin</title>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif; margin:20px;}
+    table{border-collapse:collapse; width:100%; max-width:900px;}
+    th,td{border:1px solid #ddd; padding:8px; text-align:left;}
+    th{background:#f7f7f7;}
+    .row{display:flex; gap:12px; margin:10px 0;}
+    input[type="number"]{width:120px;}
+    .muted{color:#666;}
+  </style>
+</head>
+<body>
+  <h2>Serial Admin</h2>
+  <div class="muted">Kelola <code>next</code> & <code>digits</code> per prefix (key: <code>SERIAL::&lt;prefix&gt;</code>).</div>
+  <div id="list">Loading…</div>
+
+  <script>
+    function render(items){
+      const root = document.getElementById('list');
+      if(!items || !items.length){ root.textContent = 'Belum ada prefix.'; return; }
+      const rows = items.map(it => `
+        <tr>
+          <td><code>${it.prefix}</code></td>
+          <td>${it.next ?? ''}</td>
+          <td>${it.digits ?? ''}</td>
+          <td>
+            <div class="row">
+              <label>Set Next:
+                <input type="number" id="n_${btoa(it.prefix)}" min="0" step="1" value="${it.next ?? 1}">
+              </label>
+              <button onclick="setNext('${encodeURIComponent(it.prefix)}')">Apply</button>
+              <label>Digits:
+                <input type="number" id="d_${btoa(it.prefix)}" min="1" max="8" step="1" value="${it.digits ?? 3}">
+              </label>
+              <button onclick="setDigits('${encodeURIComponent(it.prefix)}')">Apply</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+      root.innerHTML = `
+        <table>
+          <thead><tr><th>Prefix</th><th>Next</th><th>Digits</th><th>Actions</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+    function decode(u){ return decodeURIComponent(u); }
+    function setNext(enc){
+      const p = decode(enc);
+      const val = Number(document.getElementById('n_'+btoa(p)).value||0);
+      google.script.run.withSuccessHandler(()=>refresh()).adminSetNext(p, val);
+    }
+    function setDigits(enc){
+      const p = decode(enc);
+      const val = Number(document.getElementById('d_'+btoa(p)).value||3);
+      google.script.run.withSuccessHandler(()=>refresh()).adminSetDigits(p, val);
+    }
+    function refresh(){
+      google.script.run.withSuccessHandler(render).listPrefixes();
+    }
+    refresh();
+  </script>
+</body>
+</html>
