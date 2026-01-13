@@ -3,363 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>作業手順書</title>
-
+<title>作業手順書 (Work Procedures)</title>
 <style>
-  :root{
-    --bg:#f6f7fb; --panel:#fff; --ink:#0f172a; --muted:#64748b; --border:#e5e7eb; --ring:#c7d2fe;
-    --accent:#2563eb;
-    --radius-xl:22px; --radius:12px;
-    --shadow-1:0 12px 30px rgba(15,23,42,.08); --shadow-2:0 30px 60px rgba(15,23,42,.10);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; color:var(--ink);
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP","Yu Gothic",sans-serif;
-    background:
-      radial-gradient(1100px 540px at -12% -12%, #c7d2fe 0%, transparent 60%),
-      radial-gradient(820px 460px at 112% -6%, #bae6fd 0%, transparent 55%),
-      linear-gradient(120deg,#f8fafc,var(--bg));
-  }
-  a{color:inherit;text-decoration:none}
+  :root { --primary:#2563eb; --primary-dark:#1e40af; --bg-body:#f8fafc; --surface:#ffffff; --text-main:#0f172a; --border:#e2e8f0; --radius:12px; }
+  * { box-sizing: border-box; } body { margin:0; font-family:sans-serif; background:var(--bg-body); color:var(--text-main); padding-bottom:80px; }
+  header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 20px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .brand { font-weight:bold; font-size:1.1rem; color:var(--primary); }
+  .container { max-width:800px; margin:30px auto; padding:0 20px; }
 
-  /* ===== Shell (tanpa sidebar grid; sidebar pakai overlay hover) ===== */
-  .app{
-    display:grid;
-    grid-template-rows:64px 1fr;
-    grid-template-areas:
-      "header"
-      "main";
-    min-height:100vh;
-  }
-
-  header{
-    grid-area:header; position:sticky; top:0; z-index:60;
-    backdrop-filter:blur(12px); background:#ffffffc7; border-bottom:1px solid var(--border);
-  }
-  .header-wrap{
-    height:64px; max-width:1400px; margin:0 auto;
-    display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 14px;
-  }
-  .brand{display:flex; align-items:center; gap:10px}
-  .brand img{height:36px}
-  .brand .ttl{font-weight:800}
-
-  .top-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-  .btn{
-    height:34px; padding:0 12px; border:1px solid var(--border); border-radius:10px; background:#fff;
-    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-  }
-  .btn:hover{border-color:var(--ring)}
-  .btn.primary{background:var(--accent); color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(37,99,235,.25)}
-
-  /* Burger (mobile) */
-  .burger{display:none; align-items:center; justify-content:center; width:38px; height:38px;
-          border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer}
-  .burger:active{transform:scale(.98)}
-
-  /* ===== Hover Sidebar (desktop) ===== */
-  .edge-hotspot{                   /* area tipis di pinggir kiri untuk trigger */
-    position:fixed; left:0; top:64px; width:12px; height:calc(100vh - 64px);
-    z-index:70;
-  }
-  .hover-side{
-    position:fixed; left:0; top:64px; height:calc(100vh - 64px);
-    width:260px; padding:14px 12px; overflow:auto;
-    background:var(--panel); border-right:1px solid var(--border); box-shadow:var(--shadow-1);
-    transform:translateX(-100%); transition:transform .22s ease; z-index:71;
-  }
-  .hover-side.open{ transform:translateX(0) }
-  .hover-side h3{ margin:4px 8px 10px; font-size:12px; letter-spacing:.08em; color:#6b7280; text-transform:uppercase }
-  .navlist{ display:grid; gap:4px }
-  .slink{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; color:var(--ink) }
-  .slink:hover{ background:#f1f5ff }
-  .ico{ width:22px; text-align:center }
-
-  /* ===== Drawer (mobile) ===== */
-  .drawer{ position:fixed; inset:0; z-index:80; display:none }
-  .drawer.open{ display:block }
-  .drawer .backdrop{ position:absolute; inset:0; background:#0006 }
-  .drawer .panel{ position:absolute; top:0; left:0; height:100%; width:min(86%,320px);
-                  background:#fff; border-right:1px solid var(--border); box-shadow:var(--shadow-2); padding:14px 12px; overflow:auto;
-                  transform:translateX(-100%); transition:transform .25s ease }
-  .drawer.open .panel{ transform:translateX(0) }
-  .drawer .close{ position:absolute; right:10px; top:10px; border:0; background:#f1f5f9; border:1px solid var(--border); border-radius:8px; padding:6px 10px; cursor:pointer }
-
-  /* ===== Main ===== */
-  main{ grid-area:main; max-width:1400px; margin:0 auto; padding:22px 20px 96px }
-  .page-head{ display:flex; justify-content:space-between; align-items:end; gap:16px; margin-bottom:14px }
-  .h1{ font-size:22px; margin:0 }
-  .small{ font-size:12px; color:var(--muted) }
-
-  .panel{ background:#fff; border:1px solid var(--border); border-radius:var(--radius-xl); box-shadow:var(--shadow-2); padding:18px }
-  .panel + .panel{ margin-top:16px }
-
-  /* Search */
-  .searchbar{ display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap }
-  .search{ flex:1; min-width:220px; height:40px; padding:0 14px; border:2px solid #0b12221a; border-radius:9999px; outline:none; background:#fff }
-  .btn-sm{ height:34px }
-
-  /* Grid of folders */
-  .grid{ display:grid; gap:14px; grid-template-columns:repeat(3,minmax(0,1fr)) }
-  @media (max-width:1000px){ .grid{ grid-template-columns:repeat(2,minmax(0,1fr)) } }
-  @media (max-width:680px){ .grid{ grid-template-columns:1fr } }
-
-  .card{ background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.06); padding:16px }
-  .folder h3{ margin:0 0 8px }
-  .docs{ margin-top:8px; padding-left:10px; display:none }
-  .folder.open .docs{ display:block }
-  .doc{ padding:8px 0; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between; gap:10px; align-items:center }
-  .doc a{ color:var(--accent) }
-  .doc a:hover{ text-decoration:underline }
-
-  /* Ticker + footer */
-  .marquee{ position:fixed; left:20px; right:20px; bottom:20px; z-index:30; background:var(--accent); color:#fff; font-weight:800; border-radius:12px; box-shadow:var(--shadow-1); white-space:nowrap; overflow:hidden }
-  .marquee span{ display:inline-block; padding:8px 0 8px 100%; animation:marquee 18s linear infinite }
-  @keyframes marquee{ 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
-  .footer{ position:fixed; bottom:0; left:0; right:0; z-index:31; text-align:center; font-size:12px; color:var(--muted); background:#f1f5f9; padding:4px 0; border-top:1px solid var(--border) }
-
-  /* Admin auto-hide */
-  .admin-only{ display:none }
-
-  /* Hide hover sidebar on small screens (pakai drawer) */
-  @media (max-width:900px){
-    .burger{ display:inline-flex }
-    .edge-hotspot, .hover-side{ display:none }
-  }
+  /* List Items */
+  .search-box { width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:1rem; margin-bottom:20px; background:white; }
+  .card { background:var(--surface); padding:16px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:12px; display:flex; align-items:center; gap:16px; text-decoration:none; color:inherit; transition:transform .2s; }
+  .card:hover { border-color:var(--primary); transform:translateX(5px); box-shadow:0 4px 6px rgba(0,0,0,0.05); }
+  .icon-box { width:48px; height:48px; background:#eff6ff; color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+  
+  /* Help Fab */
+  .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; }
+  .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); }
+  .modal.open { display: flex; }
+  .modal-box { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; position: relative; }
 </style>
 </head>
-
 <body>
-<div class="app" id="appRoot">
-  <!-- ===== HEADER ===== -->
-  <header>
-    <div class="header-wrap">
-      <button id="btnBurger" class="burger" aria-label="メニュー"><span>☰</span></button>
 
-      <div class="brand">
-        <img src="tsh.png" alt="TSH" onerror="this.style.display='none'">
-        <strong class="ttl">品質管理生産技術</strong>
+<header>
+  <div class="brand">📝 作業手順書</div>
+  <a href="./index.html" style="font-size:1.5rem">🏠</a>
+</header>
+
+<main class="container">
+  <input type="text" class="search-box" placeholder="🔍 手順書を検索 (Cari SOP)...">
+  
+  <div id="list">
+    <!-- Items -->
+    <a href="#" class="card">
+      <div class="icon-box">📘</div>
+      <div>
+        <strong style="font-size:1.05rem;">出荷検査手順書 (MB-XX)</strong>
+        <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">FlipHTML5 • 最終更新: 2024/01</div>
       </div>
-
-      <nav class="top-actions" aria-label="Top navigation">
-        <a class="btn" href="./index.html">🏠 ホーム</a>
-        <a class="btn" href="./forms.html">📄 出荷検査成績書</a>
-        <a class="btn primary" href="./sagyoutejunsho.html" aria-current="page">📝 作業手順書</a>
-        <a class="btn" href="./claim.html">📢 クレーム</a>
-        <a class="btn" href="./quality.html">🔎 品質情報</a>
-        <button id="btnAdmin" class="btn" type="button">管理</button>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ===== MAIN ===== -->
-  <main>
-    <div class="page-head">
-      <h1 class="h1">作業手順書</h1>
-      <span class="small" id="countInfo"></span>
-    </div>
-
-    <section class="panel" aria-label="検索パネル">
-      <div class="searchbar">
-        <input id="q" class="search" type="search" placeholder="検索（フォルダ名／ドキュメント名）" aria-label="検索語">
-        <button id="btnSearch" class="btn btn-sm" type="button">検索</button>
-        <button id="btnReset"  class="btn btn-sm" type="button">リセット</button>
-        <span id="hit" class="small" aria-live="polite"></span>
+    </a>
+    
+    <a href="#" class="card">
+      <div class="icon-box">🛠</div>
+      <div>
+        <strong style="font-size:1.05rem;">組立手順 (2835-20)</strong>
+        <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">Y軸組立標準 • PDF</div>
       </div>
-    </section>
+    </a>
 
-    <section class="panel">
-      <div id="folders" class="grid"></div>
-    </section>
-  </main>
+    <a href="#" class="card">
+      <div class="icon-box">⚠️</div>
+      <div>
+        <strong style="font-size:1.05rem;">外観検査基準 (Visual Check)</strong>
+        <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">PDF • Ver 3.0</div>
+      </div>
+    </a>
+  </div>
+</main>
+
+<button class="fab-help" onclick="document.getElementById('help').classList.add('open')">?</button>
+<div class="modal" id="help">
+  <div class="modal-box">
+    <span style="position:absolute;top:15px;right:20px;cursor:pointer;font-size:1.2rem" onclick="document.getElementById('help').classList.remove('open')">✕</span>
+    <h3>ℹ️ ヘルプ</h3>
+    <p>必要なマニュアルをタップして開いてください。</p>
+  </div>
 </div>
 
-<!-- ===== Hover Sidebar (desktop) ===== -->
-<div id="edgeHotspot" class="edge-hotspot" aria-hidden="true"></div>
-<aside id="hoverSide" class="hover-side" aria-label="Pages">
-  <h3>Pages</h3>
-  <div class="navlist">
-    <a class="slink" href="./index.html"><span class="ico">🏠</span><strong>ホーム</strong><small style="color:#9ca3af;margin-left:6px">Dashboard</small></a>
-    <a class="slink" href="./forms.html"><span class="ico">📄</span><strong>出荷検査成績書</strong></a>
-    <a class="slink" href="./sagyoutejunsho.html"><span class="ico">📝</span><strong>作業手順書</strong></a>
-    <a class="slink" href="./claim.html"><span class="ico">📢</span><strong>クレーム</strong></a>
-    <a class="slink" href="./quality.html"><span class="ico">🔎</span><strong>品質情報</strong></a>
-    <a class="slink admin-only" href="./claim.html"><span class="ico">🧪</span><strong>Trial Page</strong></a>
-  </div>
-
-  <div class="admin-only" style="margin-top:12px">
-    <h3>Admin</h3>
-    <div class="navlist">
-      <a class="slink" href="./admin-numbering.html"><span class="ico">#</span><strong>Admin Numbering</strong></a>
-      <a class="slink" href="./admin-prefix.html"><span class="ico">🔧</span><strong>Admin Prefix</strong></a>
-      <a class="slink" href="./admin-serial-gas.html"><span class="ico">⛽</span><strong>Admin Serial Gas</strong></a>
-      <a class="slink" href="./thanks.html"><span class="ico">✨</span><strong>Thanks</strong></a>
-    </div>
-  </div>
-</aside>
-
-<!-- ===== Drawer (mobile) ===== -->
-<div id="drawer" class="drawer" aria-hidden="true">
-  <div class="backdrop" data-close></div>
-  <aside class="panel">
-    <button class="close" data-close>✕</button>
-    <div class="side-card" style="box-shadow:none;border:0;padding-top:30px">
-      <h3>Pages</h3>
-      <div class="navlist">
-        <a class="slink" href="./index.html"><span class="ico">🏠</span><strong>ホーム</strong><small style="color:#9ca3af;margin-left:6px">Dashboard</small></a>
-        <a class="slink" href="./forms.html"><span class="ico">📄</span><strong>出荷検査成績書</strong></a>
-        <a class="slink" href="./sagyoutejunsho.html"><span class="ico">📝</span><strong>作業手順書</strong></a>
-        <a class="slink" href="./charts.html"><span class="ico">📢</span><strong>クレーム</strong></a>
-        <a class="slink" href="./quality.html"><span class="ico">🔎</span><strong>品質情報</strong></a>
-        <a class="slink admin-only" href="./claim.html"><span class="ico">🧪</span><strong>Trial Page</strong></a>
-      </div>
-
-      <div class="admin-only" style="margin-top:12px">
-        <h3>Admin</h3>
-        <div class="navlist">
-          <a class="slink" href="./admin-numbering.html"><span class="ico">#</span><strong>Admin Numbering</strong></a>
-          <a class="slink" href="./admin-prefix.html"><span class="ico">🔧</span><strong>Admin Prefix</strong></a>
-          <a class="slink" href="./admin-serial-gas.html"><span class="ico">⛽</span><strong>Admin Serial Gas</strong></a>
-          <a class="slink" href="./thanks.html"><span class="ico">✨</span><strong>Thanks</strong></a>
-        </div>
-      </div>
-    </div>
-  </aside>
-</div>
-
-<div class="marquee"><span>⚙️ 品質管理生産技術ポータルへようこそ ｜ 本日も安全第一でお願いします ｜ 水分補給して下さいお願い致します</span></div>
-<div class="footer">Design by Wahyu</div>
-
-<script>
-/* ========= Drawer (mobile) ========= */
-const drawer = document.getElementById('drawer');
-document.getElementById('btnBurger')?.addEventListener('click', ()=>{
-  drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
-});
-drawer?.addEventListener('click', (e)=>{
-  if(e.target.hasAttribute('data-close')){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
-});
-
-/* ========= Admin gate (UI only) ========= */
-const ADMIN_CODE = "admin2025"; // ganti sesuai kebutuhan
-function setAdmin(on){
-  document.querySelectorAll('.admin-only').forEach(el=> el.style.display = on ? '' : 'none');
-  localStorage.setItem('kensa_admin', on ? '1' : '0');
-  const b=document.getElementById('btnAdmin'); if(b) b.textContent = on ? '管理（ON）' : '管理';
-}
-function isAdmin(){ return localStorage.getItem('kensa_admin')==='1'; }
-document.getElementById('btnAdmin')?.addEventListener('click', ()=>{
-  if(isAdmin()){
-    if(confirm('AdminをOFFにしますか？')) setAdmin(false);
-  }else{
-    const c = prompt('Admin code:');
-    if(c===ADMIN_CODE) setAdmin(true); else alert('コードが違います');
-  }
-});
-
-/* ========= EDGE-HOVER sidebar (desktop) ========= */
-const hot = document.getElementById('edgeHotspot');
-const fly = document.getElementById('hoverSide');
-let hideTimer = null;
-const HIDE_DELAY = 280; // ms, jeda sebelum menutup
-
-function openFly(){ clearTimeout(hideTimer); fly.classList.add('open'); }
-function scheduleClose(){ clearTimeout(hideTimer); hideTimer = setTimeout(()=>fly.classList.remove('open'), HIDE_DELAY); }
-
-hot?.addEventListener('mouseenter', openFly);
-hot?.addEventListener('mouseleave', scheduleClose);
-fly?.addEventListener('mouseenter', ()=> clearTimeout(hideTimer));
-fly?.addEventListener('mouseleave', scheduleClose);
-
-/* ========= Data ========= */
-const DATA = [
-  { name:"出荷検査手順書", docs:[
-    {title:"検査手順書MB-XX", url:"https://online.fliphtml5.com/fjppt/mhky/"},
-    {title:"ヤマザキマザック", url:"https://online.fliphtml5.com/fjppt/zuoe/"}
-  ]},
-  { name:"02_組立", docs:[
-    {title:"2835-20 MB-56V Y軸", url:"https://online.fliphtml5.com/fjppt/mdzh/"},
-    {title:"2825-20 MB-46V Y軸", url:"https://online.fliphtml5.com/fjppt/nlvw/"},
-    {title:"3033-20 MU-6300 X軸", url:"https://online.fliphtml5.com/fjppt/zrfb/"},
-    {title:"3032-20 MU-6300 X軸", url:"https://online.fliphtml5.com/fjppt/ogfx/"},
-    {title:"WX150X3 プロテクター", url:"https://online.fliphtml5.com/fjppt/znno/"}
-  ]},
-  { name:"03_その他", docs:[
-    {title:"外観検査基準_v3.pdf",  url:"./assets/docs/03/外観検査基準_v3.pdf"},
-    {title:"最終検査-作業標準.pdf", url:"./assets/docs/03/最終検査-作業標準.pdf"}
-  ]},
-];
-
-/* ========= Elements ========= */
-const elFolders = document.getElementById('folders');
-const elQ = document.getElementById('q');
-const elHit = document.getElementById('hit');
-const elCount = document.getElementById('countInfo');
-const btnSearch = document.getElementById('btnSearch');
-const btnReset  = document.getElementById('btnReset');
-
-/* ========= State ========= */
-let lastQuery = "";
-
-/* ========= Render ========= */
-function render(src){
-  elFolders.innerHTML = "";
-  let totalDocs = 0, hits = 0;
-
-  src.forEach(folder=>{
-    const card = document.createElement('div');
-    card.className = 'card folder';
-
-    const docsWrap = document.createElement('div');
-    docsWrap.className = 'docs';
-
-    const filtered = folder.docs.filter(d=>{
-      totalDocs++;
-      if(!lastQuery) return true;
-      const hay = `${folder.name} ${d.title}`.toLowerCase();
-      const keep = hay.includes(lastQuery);
-      if(keep) hits++;
-      return keep;
-    });
-
-    card.innerHTML = `<h3>📁 ${folder.name} <small style="color:#6b7280">(${filtered.length})</small></h3>`;
-
-    filtered.forEach(d=>{
-      const row = document.createElement('div');
-      row.className = 'doc';
-      row.innerHTML = `<span>📄 ${d.title}</span><a href="${d.url}" target="_blank" rel="noopener noreferrer">開く</a>`;
-      docsWrap.appendChild(row);
-    });
-
-    if(filtered.length){
-      card.appendChild(docsWrap);
-      card.addEventListener('click', ()=> card.classList.toggle('open'));
-      elFolders.appendChild(card);
-    }
-  });
-
-  if(!lastQuery){ hits = totalDocs; }
-  elHit.textContent = `ヒット: ${hits}`;
-  elCount.textContent = `合計ドキュメント: ${totalDocs}`;
-}
-
-/* ========= Events ========= */
-btnSearch.addEventListener('click', ()=>{
-  lastQuery = (elQ.value || "").trim().toLowerCase();
-  render(DATA);
-});
-btnReset.addEventListener('click', ()=>{
-  elQ.value = ""; lastQuery = ""; render(DATA);
-});
-elQ.addEventListener('keydown', e=>{ if(e.key==="Enter") btnSearch.click(); });
-
-/* ========= Init ========= */
-window.addEventListener('DOMContentLoaded', ()=>{
-  setAdmin(localStorage.getItem('kensa_admin')==='1');
-  render(DATA);
-});
-</script>
 </body>
 </html>
