@@ -2,256 +2,129 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Prefix — Kensa Shared Server</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prefix Admin</title>
   <style>
-    :root { --bg:#0b1020; --panel:#121a33; --ink:#eaf2ff; --muted:#a7b2cc; --acc:#72a0ff; --ok:#19c37d; --warn:#ffb020; --err:#ff5d5d; }
-    *{ box-sizing:border-box; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    body{ margin:0; background:linear-gradient(180deg,#0b1020 0%,#0e1530 100%); color:var(--ink); min-height:100dvh; }
-    .wrap{ max-width:960px; margin:32px auto; padding:0 16px; }
-    h1{ font-size:28px; margin:0 0 12px; }
-    p.muted{ color:var(--muted); margin:8px 0 24px; }
-    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    .panel{ background:var(--panel); border:1px solid #1f2a55; border-radius:14px; padding:16px; }
-    .panel h2{ font-size:18px; margin:0 0 12px; }
-    label{ display:block; font-weight:600; margin:10px 0 8px; }
-    input, select, button{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid #3751a0; background:#0d1430; color:var(--ink); }
-    input::placeholder{ color:#7f8bb1; }
-    button{ cursor:pointer; border-color:#4d6ed8; background:linear-gradient(180deg,#1a2d66,#142352); }
-    button:hover{ filter:brightness(1.05); }
-    .row{ display:flex; gap:10px; }
-    .row > *{ flex:1; }
-    .help{ font-size:13px; color:var(--muted); line-height:1.5; }
-    .kbd{ display:inline-block; padding:2px 6px; border:1px solid #435398; border-radius:6px; font-size:12px; }
-    .stat{ font:600 14px/1.4 ui-sans-serif,system-ui; background:#0b1230; border:1px dashed #4157a0; border-radius:10px; padding:10px; }
-    .stat .ok{ color:var(--ok); } .stat .warn{ color:var(--warn); } .stat .err{ color:var(--err); }
-    .foot{ margin-top:24px; color:#99a6cc; font-size:12px; opacity:.9; }
-    .small{ font-size:12px; color:#9fb1e6; }
-    .pill{ display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #3e5db1; background:#0f1a3a; font-size:12px; color:#cfe2ff; }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-    .hr{ height:1px; background:#243168; margin:14px 0; }
+    :root { --primary:#2563eb; --primary-dark:#1e40af; --bg-body:#f8fafc; --surface:#ffffff; --text-main:#0f172a; --border:#e2e8f0; --radius:12px; --ok:#16a34a; --err:#dc2626; }
+    * { box-sizing: border-box; } body { margin:0; font-family:sans-serif; background:var(--bg-body); color:var(--text-main); padding-bottom:80px; }
+    header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 20px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .brand { font-weight:bold; font-size:1.1rem; color:var(--primary); }
+    .container { max-width:1000px; margin:30px auto; padding:0 20px; }
+    
+    .grid { display:grid; grid-template-columns:1fr; gap:25px; }
+    @media(min-width: 768px){ .grid { grid-template-columns:1fr 1fr; } }
+
+    .card { background:var(--surface); padding:25px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; flex-direction:column; }
+    h2 { margin-top:0; font-size:1.1rem; border-bottom:2px solid #f1f5f9; padding-bottom:15px; display:flex; align-items:center; gap:10px; }
+    
+    label { display:block; font-weight:bold; font-size:0.85rem; margin-top:15px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; }
+    input { width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:8px; font-family:monospace; font-size:1rem; transition:.2s; }
+    input:focus { border-color:var(--primary); outline:none; }
+    
+    .btn-group { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+    button { padding:10px 16px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; flex:1; font-size:0.9rem; transition:.2s; }
+    .btn-save { background:var(--primary); color:white; }
+    .btn-save:hover { background:var(--primary-dark); }
+    .btn-danger { background:#fee2e2; color:var(--err); }
+    .btn-outline { background:white; border:1px solid var(--border); color:#333; }
+    .btn-outline:hover { background:#f8fafc; }
+
+    .status-box { background:#f8fafc; padding:15px; border-radius:8px; margin-top:auto; font-size:0.9rem; border-left:4px solid #ccc; }
+    .status-box.ok { border-color:var(--ok); background:#f0fdf4; color:#166534; }
+    
+    /* Help Fab */
+    .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; }
+    .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); }
+    .modal.open { display: flex; }
+    .modal-box { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; position: relative; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Admin Prefix — Kensa Shared Server</h1>
-    <p class="muted">Atur <span class="pill">Admin Prefix Override</span> lokal, dan ubah <span class="pill">digits</span>/<span class="pill">next</span> di server GAS untuk setiap <span class="pill">app_ns::prefix</span>.</p>
+<header>
+  <div class="brand">🔧 管理者設定 (Prefix)</div>
+  <a href="./index.html" style="font-size:1.5rem">🏠</a>
+</header>
 
-    <div class="grid">
-      <!-- LOCAL OVERRIDE -->
-      <div class="panel">
-        <h2>① Admin Prefix Override (Local Storage)</h2>
-        <label>Prefix (6 digit + ハイフン) — contoh: <span class="mono">282520-</span></label>
-        <div class="row">
-          <input id="overridePrefix" placeholder="例: 282520-" />
-          <button id="btnApplyLocal">Set Override</button>
-        </div>
-        <div class="row" style="margin-top:8px;">
-          <button id="btnClearLocal">Clear Override</button>
-          <button id="btnBroadcast">Broadcast ke Tab Lain</button>
-        </div>
-        <div class="hr"></div>
-        <div class="stat small">
-          Key: <span class="mono">kensa_prefix</span><br>
-          Status: <span id="localStatus">-</span>
-        </div>
-        <p class="help">Semua form membaca override ini. Kalau override kosong, form akan fallback dari 図番 (6 digit pertama + <span class="mono">-</span>).</p>
+<div class="container">
+  <div class="grid">
+    <!-- Local Config -->
+    <div class="card">
+      <h2>💻 このPCの設定 (Local)</h2>
+      <p style="font-size:0.9rem; color:#666">このブラウザのみに適用されるPrefix設定です。</p>
+      
+      <label>Prefix (6桁+ハイフン)</label>
+      <input id="localPfx" placeholder="例: 282520-">
+      
+      <div class="btn-group">
+        <button class="btn-save" id="btnSaveLocal">保存 (Save)</button>
+        <button class="btn-outline" id="btnClearLocal">クリア (Clear)</button>
       </div>
 
-      <!-- SERVER CONTROLS -->
-      <div class="panel">
-        <h2>② Prefix di Server (GAS)</h2>
-        <div class="row">
-          <div>
-            <label>App Namespace (<span class="mono">APP_NS</span>)</label>
-            <input id="appNs" placeholder="例: mb46v / wy150v_x3 / nty3_100v" />
-          </div>
-          <div>
-            <label>Prefix (6 digit + -)</label>
-            <input id="serverPrefix" placeholder="例: 282520-" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label>Digits (1–8)</label>
-            <input id="digits" type="number" min="1" max="8" placeholder="例: 3 または 4" />
-          </div>
-          <div>
-            <label>Next 番号 (整数)</label>
-            <input id="nextNum" type="number" min="0" placeholder="例: 1 / 25 / 100" />
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:10px;">
-          <button id="btnFetch">Fetch getInfo</button>
-          <button id="btnSetDigits">Set Digits</button>
-          <button id="btnSetNext">Set Next</button>
-        </div>
-        <div class="row" style="margin-top:10px;">
-          <button id="btnPeekNext">Cek nextSuffix (tanpa menulis)</button>
-          <button id="btnTakeNext">Ambil nextSuffix (simulasi assign)</button>
-        </div>
-
-        <div class="hr"></div>
-        <div class="stat">
-          <div>server key: <span id="serverKey" class="mono">-</span></div>
-          <div id="serverInfo">-</div>
-        </div>
-      </div>
+      <div style="height:20px"></div>
+      <div id="localStat" class="status-box">設定なし</div>
     </div>
 
-    <div class="panel" style="margin-top:16px;">
-      <h2>③ Opsional: Uji Lock</h2>
-      <div class="row">
-        <div><label>Client ID</label><input id="clientId" placeholder="kosongkan → auto UUID" /></div>
-        <div><label>TTL (detik)</label><input id="ttl" type="number" min="30" value="120" /></div>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <button id="btnAcquire">acquireLock</button>
-        <button id="btnExtend">extendLock</button>
-        <button id="btnRelease">releaseLock</button>
-      </div>
-      <div class="hr"></div>
-      <div class="stat" id="lockStat">-</div>
-    </div>
+    <!-- Server Config -->
+    <div class="card">
+      <h2>☁️ サーバー設定 (GAS)</h2>
+      <p style="font-size:0.9rem; color:#666">Google Sheetの連番カウンター設定です。</p>
 
-    <p class="foot">Tips: Simpan file ini sebagai <span class="mono">prefix.html</span> di server / Google Drive, akses via browser yang sama dengan operator form.</p>
+      <label>APP_NS (名前空間)</label>
+      <input id="ns" placeholder="例: okuma46">
+      
+      <label>Target Prefix</label>
+      <input id="srvPfx" placeholder="例: 282520-">
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+        <div><label>桁数 (Digits)</label><input type="number" id="digits" placeholder="3"></div>
+        <div><label>次番号 (Next)</label><input type="number" id="next" placeholder="1"></div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-outline">情報取得</button>
+        <button class="btn-save">桁数設定</button>
+        <button class="btn-danger">次番号設定</button>
+      </div>
+    </div>
   </div>
+</div>
 
-  <script>
-    /* ====== KONFIG ====== */
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzVgHHvdizqFzkejzMsCwrAmGtFvmkoUPJwQT_rtWi3Twsg6xoaGpT0IkvUIbe82Q90hA/exec'; // GANTI ke Web App URL server bersama
-    const ACTIVE_PREFIX_KEY = 'kensa_prefix';
+<button class="fab-help" onclick="document.getElementById('help').classList.add('open')">?</button>
+<div class="modal" id="help">
+  <div class="modal-box">
+    <span style="position:absolute;top:15px;right:20px;cursor:pointer;font-size:1.2rem" onclick="document.getElementById('help').classList.remove('open')">✕</span>
+    <h3>ℹ️ ヘルプ</h3>
+    <p><strong>左側 (Local):</strong> 作業するPCごとにPrefixを設定してください。<br>フォーム送信時にこのPrefixが使用されます。</p>
+    <p><strong>右側 (Server):</strong> 連番管理システム(GAS)の設定を変更します。通常は変更不要です。</p>
+  </div>
+</div>
 
-    /* ====== UTILS ====== */
-    const $ = sel => document.querySelector(sel);
-    const validPrefix = p => /^\d{6}-$/.test((p||'').trim());
-    const serverKeyOf = (appNs, prefix) => `${(appNs||'').trim()}::${(prefix||'').trim()}`;
-
-    async function apiGAS(body){
-      const res = await fetch(GAS_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify(body)
-      });
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      return await res.json();
+<script>
+  // Simple Local Logic
+  const KEY = 'kensa_prefix';
+  function updateUI(){
+    const val = localStorage.getItem(KEY);
+    const box = document.getElementById('localStat');
+    if(val){
+      document.getElementById('localPfx').value = val;
+      box.textContent = "有効 (Active): " + val;
+      box.classList.add('ok');
+    } else {
+      document.getElementById('localPfx').value = "";
+      box.textContent = "設定なし (Not Set)";
+      box.classList.remove('ok');
     }
-
-    function updateLocalStatus(){
-      const cur = localStorage.getItem(ACTIVE_PREFIX_KEY) || '';
-      const ok = validPrefix(cur);
-      $('#localStatus').innerHTML = ok
-        ? `<span class="ok">aktif</span> <span class="mono">${cur}</span>`
-        : (cur ? `<span class="warn">format salah</span> <span class="mono">${cur}</span>` : '<span class="warn">tidak ada override</span>');
-    }
-
-    /* ====== LOCAL OVERRIDE ====== */
-    $('#btnApplyLocal').addEventListener('click', ()=>{
-      const p = ($('#overridePrefix').value || '').trim();
-      if(!validPrefix(p)){ alert('Format prefix harus 6 digit + "-" (contoh: 282520-)'); return; }
-      localStorage.setItem(ACTIVE_PREFIX_KEY, p);
-      updateLocalStatus();
-      alert('Override diset. Semua form di browser ini akan memakai prefix tersebut.');
-    });
-
-    $('#btnClearLocal').addEventListener('click', ()=>{
-      localStorage.removeItem(ACTIVE_PREFIX_KEY);
-      updateLocalStatus();
-      alert('Override dihapus. Form akan fallback dari 図番.');
-    });
-
-    $('#btnBroadcast').addEventListener('click', ()=>{
-      // tulis ulang nilainya agar "storage" event mem-broadcast ke tab lain
-      const cur = localStorage.getItem(ACTIVE_PREFIX_KEY);
-      if(cur==null){ alert('Tidak ada override untuk dibroadcast.'); return; }
-      localStorage.setItem(ACTIVE_PREFIX_KEY, cur);
-      alert('Broadcast dikirim lewat storage event.');
-    });
-
-    /* ====== SERVER SIDE (digits / next / info) ====== */
-    $('#btnFetch').addEventListener('click', async ()=>{
-      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
-      if(!app || !validPrefix(pref)){ alert('Isi APP_NS dan Prefix (6 digit + "-").'); return; }
-      const key = serverKeyOf(app, pref);
-      $('#serverKey').textContent = key;
-
-      const info = await apiGAS({ action:'getInfo', prefix: key });
-      $('#serverInfo').innerHTML = `
-        <div>digits: <span class="mono">${info?.digits ?? '-'}</span></div>
-        <div>next  : <span class="mono">${info?.next ?? '-'}</span></div>
-        <div>found : <span class="${info?.digits!=null||info?.next!=null?'ok':'warn'}">${(info?.digits!=null||info?.next!=null)?'ya':'tidak'}</span></div>`;
-      if(info?.digits!=null) $('#digits').value = info.digits;
-      if(info?.next!=null) $('#nextNum').value = info.next;
-    });
-
-    $('#btnSetDigits').addEventListener('click', async ()=>{
-      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
-      const n = parseInt($('#digits').value, 10);
-      if(!app || !validPrefix(pref) || !(n>=1 && n<=8)){ alert('APP_NS / Prefix / Digits (1..8) harus valid.'); return; }
-      const key = serverKeyOf(app, pref);
-      await apiGAS({ action:'setDigits', prefix: key, digits: n });
-      alert('OK: digits di-update.'); $('#btnFetch').click();
-    });
-
-    $('#btnSetNext').addEventListener('click', async ()=>{
-      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
-      const n = parseInt($('#nextNum').value, 10);
-      if(!app || !validPrefix(pref) || !(n>=0)){ alert('APP_NS / Prefix / Next (>=0) harus valid.'); return; }
-      const key = serverKeyOf(app, pref);
-      await apiGAS({ action:'setNext', prefix: key, next: n });
-      alert('OK: next di-update.'); $('#btnFetch').click();
-    });
-
-    $('#btnPeekNext').addEventListener('click', async ()=>{
-      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
-      if(!app || !validPrefix(pref)){ alert('APP_NS / Prefix harus valid.'); return; }
-      const key = serverKeyOf(app, pref);
-      const r = await apiGAS({ action:'getInfo', prefix: key });
-      alert('next sekarang: ' + (r?.next ?? '(belum ada)'));
-    });
-
-    $('#btnTakeNext').addEventListener('click', async ()=>{
-      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
-      if(!app || !validPrefix(pref)){ alert('APP_NS / Prefix harus valid.'); return; }
-      const key = serverKeyOf(app, pref);
-      const r = await apiGAS({ action:'nextSuffix', prefix: key }); // server increment atomik
-      alert('ambil nomor → ' + (r?.suffix ?? '(gagal)'));
-      $('#btnFetch').click();
-    });
-
-    /* ====== LOCK TEST (opsional) ====== */
-    let lockId = null;
-    function ensureClientId(){
-      let id = ($('#clientId').value||'').trim();
-      if(!id){ id = crypto.randomUUID(); $('#clientId').value = id; }
-      return id;
-    }
-    function showLock(m){ $('#lockStat').textContent = JSON.stringify(m||{}, null, 2); }
-
-    $('#btnAcquire').addEventListener('click', async ()=>{
-      const app = $('#appNs').value.trim(); const pref = $('#serverPrefix').value.trim();
-      if(!app || !validPrefix(pref)){ alert('APP_NS / Prefix harus valid.'); return; }
-      const key = serverKeyOf(app, pref);
-      const ttl = parseInt($('#ttl').value||'120',10);
-      const r = await apiGAS({ action:'acquireLock', prefix: key, clientId: ensureClientId(), ttlSec: ttl });
-      if(r?.ok){ lockId = r.lockId; showLock(r); alert('Lock ok.'); } else { showLock(r); alert('Lock gagal.'); }
-    });
-    $('#btnExtend').addEventListener('click', async ()=>{
-      if(!lockId){ alert('Belum acquire lock.'); return; }
-      const ttl = parseInt($('#ttl').value||'120',10);
-      const r = await apiGAS({ action:'extendLock', lockId, prefix: '', clientId: ensureClientId(), ttlSec: ttl });
-      showLock(r); alert('Extend dikirim.');
-    });
-    $('#btnRelease').addEventListener('click', async ()=>{
-      if(!lockId){ alert('Belum acquire lock.'); return; }
-      const r = await apiGAS({ action:'releaseLock', lockId, clientId: ensureClientId() });
-      showLock(r); lockId=null; alert('Release dikirim.');
-    });
-
-    /* ====== INIT ====== */
-    updateLocalStatus();
-  </script>
+  }
+  document.getElementById('btnSaveLocal').onclick = () => {
+    const v = document.getElementById('localPfx').value;
+    if(v && v.match(/^\d{6}-$/)){ 
+      localStorage.setItem(KEY, v); updateUI(); alert('保存しました'); 
+    } else { alert('エラー: 6桁+ハイフン (000000-) で入力してください'); }
+  };
+  document.getElementById('btnClearLocal').onclick = () => {
+    localStorage.removeItem(KEY); updateUI(); alert('クリアしました');
+  };
+  updateUI();
+</script>
 </body>
 </html>
