@@ -3,369 +3,228 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>品質管理生産技術部 — Dashboard</title>
-
-<!-- Tipografi & palet mengikuti halaman kamu -->
+<title>ダッシュボード (Dashboard)</title>
 <style>
-  :root{
-    --bg:#f6f7fb; --panel:#fff; --ink:#0f172a; --muted:#64748b; --border:#e5e7eb; --ring:#c7d2fe;
-    --accent:#2563eb; --accent-2:#1d4ed8; --ok:#16a34a; --warn:#f59e0b;
-    --radius-xl:22px; --radius:12px;
-    --shadow-1:0 12px 30px rgba(15,23,42,.08); --shadow-2:0 30px 60px rgba(15,23,42,.10);
+  /* --- MASTER STYLE (Biru Modern) --- */
+  :root {
+    --primary: #2563eb; --primary-dark: #1e40af; --accent: #0ea5e9;
+    --bg-body: #f8fafc; --surface: #ffffff;
+    --text-main: #0f172a; --text-muted: #64748b;
+    --border: #e2e8f0; --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
   }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; color:var(--ink);
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans JP","Yu Gothic",sans-serif;
-    background:
-      radial-gradient(1100px 540px at -12% -12%, #c7d2fe 0%, transparent 60%),
-      radial-gradient(820px 460px at 112% -6%, #bae6fd 0%, transparent 55%),
-      linear-gradient(120deg,#f8fafc,var(--bg));
-  }
-  a{color:inherit;text-decoration:none}
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; background: var(--bg-body); color: var(--text-main); padding-bottom: 80px; }
+  a { text-decoration: none; color: inherit; transition: .2s; }
+  
+  /* Navbar */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; padding: 0 20px; height: 64px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .brand { font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; color: var(--primary); }
+  .nav-desktop { display: none; gap: 20px; }
+  .nav-link { font-size: 0.95rem; color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-weight: 500; }
+  .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); }
+  
+  @media(min-width: 900px) { .nav-desktop { display: flex; } .burger { display: none; } }
 
-  /* ===== Shell ===== */
-  .app{
-    display:grid;
-    grid-template-rows:64px 1fr;
-    grid-template-areas:"header" "main";
-    min-height:100vh;
-  }
-  header{
-    grid-area:header; position:sticky; top:0; z-index:60;
-    backdrop-filter:blur(12px); background:#ffffffc7; border-bottom:1px solid var(--border);
-  }
-  .header-wrap{
-    height:64px; max-width:1400px; margin:0 auto;
-    display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 14px;
-  }
-  .brand{display:flex; align-items:center; gap:10px}
-  .brand img{height:36px}
-  .brand .ttl{font-weight:800}
+  /* Mobile Drawer */
+  .burger { background: none; border: 1px solid var(--border); padding: 8px; border-radius: 8px; cursor: pointer; color: var(--text-main); }
+  .drawer { position: fixed; inset: 0; z-index: 100; display: none; }
+  .drawer.open { display: block; }
+  .backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); }
+  .drawer-content { position: absolute; top: 0; left: 0; bottom: 0; width: 280px; background: white; padding: 25px; transform: translateX(-100%); transition: .3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
+  .drawer.open .drawer-content { transform: translateX(0); }
+  .drawer-menu { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+  .drawer-link { padding: 12px; border-radius: 8px; font-weight: 500; color: var(--text-main); }
+  .drawer-link:hover { background: #f1f5f9; }
+  .drawer-link.active { background: #eff6ff; color: var(--primary); }
 
-  .top-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-  .btn{
-    height:34px; padding:0 12px; border:1px solid var(--border); border-radius:10px; background:#fff;
-    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-  }
-  .btn:hover{border-color:var(--ring)}
-  .btn.primary{background:var(--accent); color:#fff; border-color:#1e40af; box-shadow:0 6px 16px rgba(37,99,235,.25)}
+  /* Layout */
+  .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+  @media(min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; } .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
-  /* Burger (mobile) */
-  .burger{display:none; align-items:center; justify-content:center; width:38px; height:38px;
-          border:1px solid var(--border); border-radius:10px; background:#fff; cursor:pointer}
-  .burger:active{transform:scale(.98)}
+  /* Cards */
+  .card { background: var(--surface); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); transition: transform 0.2s; }
+  .card:hover { transform: translateY(-2px); }
+  h2, h3 { margin-top: 0; margin-bottom: 15px; color: var(--text-main); }
+  h3 { font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+  
+  /* Hero */
+  .hero { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; }
+  .hero h2 { color: white; margin-bottom: 5px; }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
+  .stat-val { font-size: 1.8rem; font-weight: 800; display: block; }
+  .stat-lbl { font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* ===== Main ===== */
-  main{ grid-area:main; max-width:1400px; margin:0 auto; padding:22px 20px 120px }
-  .page-head{ display:flex; justify-content:space-between; align-items:end; gap:16px; margin-bottom:14px }
-  .h1{ font-size:22px; margin:0 }
-  .small{ font-size:12px; color:var(--muted) }
+  /* Quick Buttons */
+  .btn-quick { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: white; border: 1px solid var(--border); border-radius: var(--radius); gap: 10px; color: var(--text-main); height: 100%; transition: .2s; }
+  .btn-quick:hover { border-color: var(--primary); background: #f8fafc; }
+  .btn-icon { font-size: 2rem; }
 
-  .panel{ background:#fff; border:1px solid var(--border); border-radius:var(--radius-xl); box-shadow:var(--shadow-2); padding:18px }
-  .panel + .panel{ margin-top:16px }
+  /* Help Fab */
+  .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; transition: transform 0.2s; }
+  .fab-help:hover { transform: scale(1.1); background: var(--primary-dark); }
+  
+  .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; }
+  .modal.open { display: flex; animation: fadeIn 0.2s; }
+  .modal-box { background: white; padding: 30px; border-radius: 16px; max-width: 450px; width: 90%; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+  .close-modal { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 1.2rem; color: #999; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  /* ===== Hero ===== */
-  .hero{
-    display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; align-items:stretch;
-  }
-  .hero .card{
-    background:#fff; border:1px solid var(--border); border-radius:20px; box-shadow:var(--shadow-2); padding:18px; overflow:hidden;
-  }
-  .hero .title{
-    display:flex; align-items:center; gap:10px; margin-bottom:6px; font-weight:800; font-size:18px;
-  }
-  .stat-row{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:10px}
-  .stat{background:#f8fafc; border:1px solid var(--border); border-radius:14px; padding:12px}
-  .stat b{display:block; font-size:18px}
-  .stat small{color:var(--muted)}
-
-  .quick-links{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px }
-  .qk{display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--border); border-radius:14px; background:#fff}
-  .qk:hover{ border-color:#93c5fd; background:#f8fbff }
-  .qk .ico{font-size:18px}
-
-  /* ===== Grid ===== */
-  .grid{ display:grid; gap:14px; grid-template-columns:repeat(3,minmax(0,1fr)) }
-  @media (max-width:1100px){ .hero{grid-template-columns:1fr} .grid{ grid-template-columns:repeat(2,minmax(0,1fr)) } }
-  @media (max-width:700px){ .burger{display:inline-flex} .top-actions{display:none} .grid{ grid-template-columns:1fr } }
-
-  .card{ background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,.06); padding:16px }
-  .card h3{ margin:0 0 10px }
-  .list{ display:flex; flex-direction:column; gap:8px }
-  .item{
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-    padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:#fff;
-  }
-  .item small{ color:var(--muted) }
-
-  /* ===== Hover Sidebar (desktop) ===== */
-  .edge-hotspot{ position:fixed; left:0; top:64px; width:12px; height:calc(100vh - 64px); z-index:70 }
-  .hover-side{
-    position:fixed; left:0; top:64px; height:calc(100vh - 64px);
-    width:260px; padding:14px 12px; overflow:auto;
-    background:var(--panel); border-right:1px solid var(--border); box-shadow:var(--shadow-1);
-    transform:translateX(-100%); transition:transform .22s ease; z-index:71;
-  }
-  .hover-side.open{ transform:translateX(0) }
-  .hover-side h3{ margin:4px 8px 10px; font-size:12px; letter-spacing:.08em; color:#6b7280; text-transform:uppercase }
-  .navlist{ display:grid; gap:4px }
-  .slink{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; color:var(--ink) }
-  .slink small{color:var(--muted)}
-  .slink:hover{ background:#f1f5ff }
-  .ico{ width:22px; text-align:center }
-
-  /* ===== Drawer (mobile) ===== */
-  .drawer{ position:fixed; inset:0; z-index:80; display:none }
-  .drawer.open{ display:block }
-  .drawer .backdrop{ position:absolute; inset:0; background:#0006 }
-  .drawer .panel{ position:absolute; top:0; left:0; height:100%; width:min(86%,320px);
-                  background:#fff; border-right:1px solid var(--border); box-shadow:var(--shadow-2); padding:14px 12px; overflow:auto;
-                  transform:translateX(-100%); transition:transform .25s ease }
-  .drawer.open .panel{ transform:translateX(0) }
-  .drawer .close{ position:absolute; right:10px; top:10px; border:0; background:#f1f5f9; border:1px solid var(--border); border-radius:8px; padding:6px 10px; cursor:pointer }
-
-  /* Footer & marquee */
-  .marquee{ position:fixed; left:20px; right:20px; bottom:20px; z-index:30; background:var(--accent); color:#fff; font-weight:800; border-radius:12px; box-shadow:var(--shadow-1); white-space:nowrap; overflow:hidden }
-  .marquee span{ display:inline-block; padding:8px 0 8px 100%; animation:marquee 18s linear infinite }
-  @keyframes marquee{ 0%{transform:translateX(0)} 100%{transform:translateX(-100%)} }
-  .footer{ position:fixed; bottom:0; left:0; right:0; z-index:31; text-align:center; font-size:12px; color:var(--muted); background:#f1f5f9; padding:4px 0; border-top:1px solid var(--border) }
-
-  /* Admin */
-  .admin-only{ display:none }
-  .pill{display:inline-block;padding:2px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:#334155}
-  .pill.ok{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
-  .pill.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+  /* Utility */
+  .hidden { display: none !important; }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+  .badge.off { background: #fee2e2; color: #991b1b; }
+  .badge.on { background: #dcfce7; color: #166534; }
 </style>
 </head>
-
 <body>
-<div class="app" id="appRoot">
-  <!-- ===== HEADER ===== -->
-  <header>
-    <div class="header-wrap">
-      <button id="btnBurger" class="burger" aria-label="メニュー"><span>☰</span></button>
 
-      <div class="brand">
-        <!-- Logo user (disembunyikan jika belum ada) -->
-        <img src="tsh.png" alt="TSH" onerror="this.style.display='none'">
-        <strong class="ttl">品質管理生産技術部</strong>
-      </div>
-
-      <nav class="top-actions" aria-label="Top navigation">
-        <a class="btn primary" href="./index.html" aria-current="page">🏠 ホーム</a>
-        <a class="btn" href="./forms.html">📄 出荷検査成績書</a>
-        <a class="btn" href="./sagyoutejunsho.html">📝 作業手順書</a>
-        <a class="btn" href="./claim.html">📢 クレーム</a>
-        <a class="btn" href="./quality.html">🔎 品質情報</a>
-        <!-- Konsisten dengan halaman lain -->
-        <a class="btn" href="./admin-prefix.html">🔑 Admin Prefix</a>
-        <button id="btnAdmin" class="btn" type="button" title="Admin login/logout">管理</button>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ===== MAIN ===== -->
-  <main>
-    <div class="page-head">
-      <h1 class="h1">Dashboard</h1>
-      <span class="small">
-        <span id="admState" class="pill warn" aria-live="polite">管理: OFF</span>
-      </span>
-    </div>
-
-    <!-- ===== Hero ===== -->
-    <section class="hero" aria-label="Hero">
-      <div class="card" aria-labelledby="quick-title">
-        <div class="title" id="quick-title">🚀 クイックアクセス</div>
-        <div class="quick-links">
-          <a class="qk" href="./forms.html"><span class="ico">📄</span><div><b>出荷検査成績書</b><div class="small">フォルダ/検索</div></div></a>
-          <a class="qk" href="./sagyoutejunsho.html"><span class="ico">📝</span><div><b>作業手順書</b><div class="small">組立/出荷/基準</div></div></a>
-          <a class="qk" href="./quality.html"><span class="ico">🔎</span><div><b>品質情報</b><div class="small">外観・最終検査</div></div></a>
-          <a class="qk" href="./claim.html"><span class="ico">📢</span>
-  <div><b>クレーム</b><div class="small">不具合・是正</div></div>
-</a>
-
-        </div>
-        <div class="small" style="margin-top:8px;color:var(--muted)">ショートカット</div>
-      </div>
-
-      <div class="card" aria-labelledby="stat-title">
-        <div class="title" id="stat-title">📊 ステータス</div>
-        <div class="stat-row">
-          <div class="stat"><small>今日のチェック</small><b id="kpiToday">12</b></div>
-          <div class="stat"><small>公開ドキュメント</small><b id="kpiDocs">17</b></div>
-          <div class="stat"><small>管理状況</small><b><span id="kpiAdmin">OFF</span></b></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== Cards ===== -->
-    <section class="grid" aria-label="Main sections">
-      <div class="card">
-        <h3>📂 最近アクセス</h3>
-        <div id="recentList" class="list" aria-live="polite">
-          <!-- will be populated -->
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>📎 よく使うリンク</h3>
-        <div class="list">
-          <a class="item" href="https://online.fliphtml5.com/fjppt/mhky/" target="_blank" rel="noopener noreferrer">
-            <span>検査手順書MB-XX</span><small>FlipHTML5</small>
-          </a>
-          <a class="item" href="https://wahyu0312-source.github.io/okuma46/" target="_blank" rel="noopener noreferrer">
-            <span>2825-20 MB-46V Y軸</span><small>オークマ</small>
-          </a>
-          <a class="item" href="./admin-prefix.html">
-            <span>Admin Prefix</span><small>6桁プレフィックス管理</small>
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>🧰 管理ツール</h3>
-        <div class="list">
-          <a class="item admin-only" href="./admin-numbering.html"><span>Admin Numbering</span><small>server counter</small></a>
-          <a class="item admin-only" href="./admin-serial-gas.html"><span>Admin Serial (GAS)</span><small>prefix digits/next</small></a>
-          <a class="item admin-only" href="./thanks.html"><span>Thanks</span><small>credit</small></a>
-          <div class="item">
-            <span>管理モード</span>
-            <button id="btnAdmin2" class="btn" type="button">管理</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-</div>
-
-<!-- ===== Hover Sidebar (desktop) ===== -->
-<div id="edgeHotspot" class="edge-hotspot" aria-hidden="true"></div>
-<aside id="hoverSide" class="hover-side" aria-label="Pages">
-  <h3>Pages</h3>
-  <div class="navlist">
-    <a class="slink" href="./index.html"><span class="ico">🏠</span><strong>ホーム</strong><small>Dashboard</small></a>
-    <a class="slink" href="./forms.html"><span class="ico">📄</span><strong>出荷検査成績書</strong></a>
-    <a class="slink" href="./sagyoutejunsho.html"><span class="ico">📝</span><strong>作業手順書</strong></a>
-    <a class="slink" href="./claim.html"><span class="ico">📢</span><strong>クレーム</strong></a>
-    <a class="slink" href="./quality.html"><span class="ico">🔎</span><strong>品質情報</strong></a>
-    <a class="slink" href="./admin-prefix.html"><span class="ico">🔑</span><strong>Admin Prefix</strong><small>6桁管理</small></a>
-    <a class="slink admin-only" href="./admin-serial-gas.html"><span class="ico">⛽</span><strong>Admin Serial GAS</strong></a>
+<header>
+  <div class="brand">
+    <button class="burger" id="btnMenu">☰</button>
+    <span>品質管理システム</span> <!-- Quality Management System -->
   </div>
-</aside>
+  <nav class="nav-desktop">
+    <a href="./index.html" class="nav-link active">🏠 ホーム</a>
+    <a href="./forms.html" class="nav-link">📄 成績書</a>
+    <a href="./sagyoutejunsho.html" class="nav-link">📝 手順書</a>
+    <a href="./quality.html" class="nav-link">🔎 品質情報</a>
+    <a href="./claim.html" class="nav-link">📢 クレーム</a>
+  </nav>
+</header>
 
-<!-- ===== Drawer (mobile) ===== -->
-<div id="drawer" class="drawer" aria-hidden="true">
-  <div class="backdrop" data-close></div>
-  <aside class="panel">
-    <button class="close" data-close>✕</button>
-    <div class="side-card" style="box-shadow:none;border:0;padding-top:30px">
-      <h3>Pages</h3>
-      <div class="navlist">
-        <a class="slink" href="./index.html"><span class="ico">🏠</span><strong>ホーム</strong><small>Dashboard</small></a>
-        <a class="slink" href="./forms.html"><span class="ico">📄</span><strong>出荷検査成績書</strong></a>
-        <a class="slink" href="./sagyoutejunsho.html"><span class="ico">📝</span><strong>作業手順書</strong></a>
-        <a class="slink" href="./claim.html"><span class="ico">📢</span><strong>クレーム</strong></a>
-
-        <a class="slink" href="./quality.html"><span class="ico">🔎</span><strong>品質情報</strong></a>
-        <a class="slink" href="./admin-prefix.html"><span class="ico">🔑</span><strong>Admin Prefix</strong></a>
-      </div>
+<!-- Mobile Drawer -->
+<div class="drawer" id="drawer">
+  <div class="backdrop" id="closeDrawer"></div>
+  <div class="drawer-content">
+    <h3 style="margin-top:10px;">メニュー (Menu)</h3>
+    <div class="drawer-menu">
+      <a href="./index.html" class="drawer-link active">🏠 ホーム</a>
+      <a href="./forms.html" class="drawer-link">📄 出荷検査成績書</a>
+      <a href="./sagyoutejunsho.html" class="drawer-link">📝 作業手順書</a>
+      <a href="./quality.html" class="drawer-link">🔎 品質情報</a>
+      <a href="./claim.html" class="drawer-link">📢 クレーム入力</a>
+      <hr style="border:0; border-top:1px solid #eee; width:100%">
+      <a href="./admin-prefix.html" class="drawer-link">🔑 管理者設定 (Admin)</a>
     </div>
-  </aside>
+  </div>
 </div>
 
-<div class="marquee"><span>⚙️ 品質管理生産技術ポータルへようこそ ｜ 本日も安全第一でお願いします ｜ 水分補給して下さいお願い致します</span></div>
-<div class="footer">Design by Wahyu</div>
+<main class="container">
+  <!-- Hero Section -->
+  <div class="grid grid-2" style="margin-bottom: 25px;">
+    <section class="card hero">
+      <h2>👋 お疲れ様です</h2>
+      <p style="opacity: 0.9;">本日の業務状況概要 (Status Hari Ini)</p>
+      <div class="stats-row">
+        <div><span class="stat-val">12</span><span class="stat-lbl">承認待ち</span></div>
+        <div><span class="stat-val">5</span><span class="stat-lbl">進行中</span></div>
+        <div><span class="stat-val" id="adminState">OFF</span><span class="stat-lbl">管理者モード</span></div>
+      </div>
+    </section>
+
+    <section class="card" style="border:none; background:transparent; box-shadow:none; padding:0;">
+      <div class="grid grid-2" style="height:100%">
+        <a href="./forms.html" class="btn-quick">
+          <div class="btn-icon">📄</div>
+          <strong>成績書検索</strong>
+        </a>
+        <a href="./claim.html" class="btn-quick">
+          <div class="btn-icon">📢</div>
+          <strong>クレーム報告</strong>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- Secondary Content -->
+  <div class="grid grid-3">
+    <section class="card">
+      <h3>📂 最近の履歴</h3>
+      <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;" id="recentList">
+        <li>履歴なし (Belum ada history)</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h3>📎 リンク集</h3>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <a href="https://online.fliphtml5.com/fjppt/mhky/" target="_blank" class="nav-link" style="background:white; border:1px solid #eee">📘 検査基準書 (MB-XX)</a>
+        <a href="#" class="nav-link" style="background:white; border:1px solid #eee">📗 社内規定 (Internal Rule)</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>⚙️ 管理ツール</h3>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span>ステータス:</span>
+          <span id="badgeAdmin" class="badge off">OFF</span>
+        </div>
+        <button id="btnToggleAdmin" class="nav-link" style="text-align:center; border:1px solid var(--border); cursor:pointer;">モード切替 (Switch)</button>
+        
+        <!-- Hidden links show when Admin ON -->
+        <a href="./admin-prefix.html" class="nav-link admin-only hidden" style="background:#fff7ed; color:#c2410c; text-align:center;">🔑 Prefix 設定</a>
+        <a href="./admin-serial-gas.html" class="nav-link admin-only hidden" style="background:#fff7ed; color:#c2410c; text-align:center;">⛽ シリアル管理</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Help Modal -->
+<button class="fab-help" onclick="toggleHelp()">?</button>
+
+<div class="modal" id="helpModal">
+  <div class="backdrop" onclick="toggleHelp()"></div>
+  <div class="modal-box">
+    <span class="close-modal" onclick="toggleHelp()">✕</span>
+    <h3>ℹ️ ヘルプ (Bantuan)</h3>
+    <p><strong>ホーム画面の使い方:</strong></p>
+    <ul style="font-size:0.95rem; padding-left:20px; color:#444; line-height:1.6;">
+      <li>各メニューから業務ページへ移動できます。<br><small>(Gunakan menu untuk navigasi)</small></li>
+      <li>「クイックアクセス」でよく使う機能へすぐ飛べます。<br><small>(Akses cepat ke menu penting)</small></li>
+      <li>管理者の方は「モード切替」からログインしてください。<br><small>(Admin login via tombol Switch)</small></li>
+    </ul>
+  </div>
+</div>
 
 <script>
-/* ========= Drawer (mobile) ========= */
-const drawer = document.getElementById('drawer');
-document.getElementById('btnBurger')?.addEventListener('click', ()=>{
-  drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
-});
-drawer?.addEventListener('click', (e)=>{
-  if(e.target.hasAttribute('data-close')){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
-});
+  /* --- Shared Logic --- */
+  const $ = s => document.querySelector(s);
+  $('#btnMenu').onclick = () => $('#drawer').classList.add('open');
+  $('#closeDrawer').onclick = () => $('#drawer').classList.remove('open');
+  window.toggleHelp = () => $('#helpModal').classList.toggle('open');
 
-/* ========= Admin gate ========= */
-const ADMIN_CODE = "admin2025";
-const ADMIN_FLAG_KEY = 'kensa_admin';
-function setAdmin(on){
-  document.querySelectorAll('.admin-only').forEach(el=> el.style.display = on ? '' : 'none');
-  if(on){ localStorage.setItem(ADMIN_FLAG_KEY,'1'); } else { localStorage.removeItem(ADMIN_FLAG_KEY); }
-  const s=document.getElementById('admState'); if(s){ s.textContent = on? '管理: ON' : '管理: OFF'; s.className = 'pill ' + (on?'ok':'warn'); }
-  document.getElementById('kpiAdmin').textContent = on? 'ON' : 'OFF';
-}
-function isAdmin(){ return localStorage.getItem(ADMIN_FLAG_KEY)==='1'; }
-document.getElementById('btnAdmin')?.addEventListener('click', toggleAdmin);
-document.getElementById('btnAdmin2')?.addEventListener('click', toggleAdmin);
-function toggleAdmin(){
-  if(isAdmin()){
-    if(confirm('AdminをOFFにしますか？')) setAdmin(false);
-  }else{
-    const c = prompt('Admin code:'); if(c===ADMIN_CODE) setAdmin(true); else alert('コードが違います');
+  /* --- Admin Logic --- */
+  const ADMIN_KEY = 'kensa_admin';
+  function updateAdminUI(){
+    const isAdmin = localStorage.getItem(ADMIN_KEY) === '1';
+    $('#adminState').textContent = isAdmin ? 'ON' : 'OFF';
+    
+    const badge = $('#badgeAdmin');
+    badge.textContent = isAdmin ? 'ON' : 'OFF';
+    badge.className = isAdmin ? 'badge on' : 'badge off';
+
+    document.querySelectorAll('.admin-only').forEach(el => {
+      if(isAdmin) el.classList.remove('hidden'); else el.classList.add('hidden');
+    });
   }
-}
 
-/* ========= EDGE-HOVER sidebar (desktop) ========= */
-const hot = document.getElementById('edgeHotspot');
-const fly = document.getElementById('hoverSide');
-let hideTimer = null;
-const HIDE_DELAY = 240;
-function openFly(){ clearTimeout(hideTimer); fly.classList.add('open'); }
-function scheduleClose(){ clearTimeout(hideTimer); hideTimer = setTimeout(()=>fly.classList.remove('open'), HIDE_DELAY); }
-hot?.addEventListener('mouseenter', openFly);
-hot?.addEventListener('mouseleave', scheduleClose);
-fly?.addEventListener('mouseenter', ()=> clearTimeout(hideTimer));
-fly?.addEventListener('mouseleave', scheduleClose);
-
-/* ========= Recent (local only) ========= */
-const recentKey = 'kensa_recent_links';
-function getRecent(){ try{return JSON.parse(localStorage.getItem(recentKey)||'[]')}catch{return[]} }
-function addRecent(url, label){
-  const list = getRecent().filter(x=>x.url!==url);
-  list.unshift({url,label,ts:Date.now()}); localStorage.setItem(recentKey, JSON.stringify(list.slice(0,6)));
-  renderRecent();
-}
-function renderRecent(){
-  const el = document.getElementById('recentList'); if(!el) return;
-  el.innerHTML = '';
-  const list = getRecent();
-  if(!list.length){ el.innerHTML = '<div class="small" style="color:var(--muted)">最近の履歴はありません。</div>'; return; }
-  list.forEach(it=>{
-    const a = document.createElement('a');
-    a.className='item'; a.href=it.url; a.target='_blank'; a.rel='noopener noreferrer';
-    a.innerHTML = `<span>${it.label||it.url}</span><small>${new Date(it.ts).toLocaleString()}</small>`;
-    el.appendChild(a);
-  });
-}
-
-/* Seed beberapa link awal agar kotak “最近アクセス” terisi pertama kali */
-(function seedRecentOnce(){
-  const flag='kensa_recent_seeded';
-  if(!localStorage.getItem(flag)){
-    [
-      {url:'./forms.html',label:'出荷検査成績書'},
-      {url:'./sagyoutejunsho.html',label:'作業手順書'},
-      {url:'./quality.html',label:'品質情報'}
-    ].forEach(x=>addRecent(x.url,x.label));
-    localStorage.setItem(flag,'1');
-  }else{ renderRecent(); }
-})();
-
-/* Attach listeners to log clicks from quick links */
-document.querySelectorAll('.qk').forEach(a=>{
-  a.addEventListener('click', ()=> addRecent(a.getAttribute('href'), a.textContent.trim()));
-});
-
-/* ========= KPI dummy (bisa dihubungkan ke sumber nyata nanti) ========= */
-(function init(){
-  setAdmin(isAdmin());
-  document.getElementById('kpiToday').textContent = Math.floor(8 + Math.random()*10);
-  document.getElementById('kpiDocs').textContent  = 17; // contoh stat
-})();
+  $('#btnToggleAdmin').onclick = () => {
+    if(localStorage.getItem(ADMIN_KEY) === '1'){
+      if(confirm('ログアウトしますか？ (Logout?)')) localStorage.removeItem(ADMIN_KEY);
+    } else {
+      if(prompt('パスワード (Password):') === 'admin2025') localStorage.setItem(ADMIN_KEY, '1');
+      else alert('パスワードが違います (Salah)');
+    }
+    updateAdminUI();
+  };
+  
+  // Init
+  updateAdminUI();
 </script>
 </body>
 </html>
