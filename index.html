@@ -3,81 +3,54 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ダッシュボード (Dashboard)</title>
+<title>Dashboard</title>
 <style>
-  /* --- MASTER STYLE (Biru Modern) --- */
-  :root {
-    --primary: #2563eb; --primary-dark: #1e40af; --accent: #0ea5e9;
-    --bg-body: #f8fafc; --surface: #ffffff;
-    --text-main: #0f172a; --text-muted: #64748b;
-    --border: #e2e8f0; --radius: 12px;
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; background: var(--bg-body); color: var(--text-main); padding-bottom: 80px; }
-  a { text-decoration: none; color: inherit; transition: .2s; }
+  :root { --primary:#2563eb; --primary-dark:#1e40af; --bg-body:#f8fafc; --surface:#ffffff; --text-main:#0f172a; --text-muted:#64748b; --border:#e2e8f0; --radius:12px; --shadow:0 4px 6px -1px rgba(0,0,0,0.05); }
+  * { box-sizing: border-box; } body { margin:0; font-family:"Helvetica Neue",Arial,sans-serif; background:var(--bg-body); color:var(--text-main); padding-bottom:80px; }
+  a { text-decoration:none; color:inherit; transition:.2s; }
   
-  /* Navbar */
-  header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; padding: 0 20px; height: 64px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-  .brand { font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; color: var(--primary); }
-  .nav-desktop { display: none; gap: 20px; }
-  .nav-link { font-size: 0.95rem; color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-weight: 500; }
-  .nav-link:hover, .nav-link.active { background: #eff6ff; color: var(--primary); }
-  
-  @media(min-width: 900px) { .nav-desktop { display: flex; } .burger { display: none; } }
+  header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 20px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .brand { font-weight:bold; font-size:1.2rem; color:var(--primary); display:flex; align-items:center; gap:10px; }
+  .nav-desktop { display:none; gap:15px; }
+  @media(min-width: 900px){ .nav-desktop{display:flex} .burger{display:none} }
+  .nav-link { padding:8px 12px; border-radius:6px; font-weight:500; color:var(--text-muted); }
+  .nav-link.active, .nav-link:hover { background:#eff6ff; color:var(--primary); }
 
-  /* Mobile Drawer */
-  .burger { background: none; border: 1px solid var(--border); padding: 8px; border-radius: 8px; cursor: pointer; color: var(--text-main); }
-  .drawer { position: fixed; inset: 0; z-index: 100; display: none; }
-  .drawer.open { display: block; }
-  .backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); }
-  .drawer-content { position: absolute; top: 0; left: 0; bottom: 0; width: 280px; background: white; padding: 25px; transform: translateX(-100%); transition: .3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
-  .drawer.open .drawer-content { transform: translateX(0); }
-  .drawer-menu { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
-  .drawer-link { padding: 12px; border-radius: 8px; font-weight: 500; color: var(--text-main); }
-  .drawer-link:hover { background: #f1f5f9; }
-  .drawer-link.active { background: #eff6ff; color: var(--primary); }
+  .burger { background:none; border:1px solid var(--border); padding:8px; border-radius:8px; cursor:pointer; }
+  .drawer { position:fixed; inset:0; z-index:100; display:none; }
+  .drawer.open { display:block; }
+  .backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.4); }
+  .drawer-content { position:absolute; top:0; left:0; bottom:0; width:280px; background:white; padding:25px; transform:translateX(-100%); transition:.3s; }
+  .drawer.open .drawer-content { transform:translateX(0); }
+  .drawer-link { display:block; padding:12px; font-weight:500; border-radius:8px; margin-bottom:5px; }
+  .drawer-link.active { background:#eff6ff; color:var(--primary); }
 
-  /* Layout */
-  .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-  .grid { display: grid; gap: 20px; }
-  .grid-2 { grid-template-columns: 1fr; }
-  .grid-3 { grid-template-columns: 1fr; }
-  @media(min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; } .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+  .container { max-width:1200px; margin:30px auto; padding:0 20px; }
+  .grid { display:grid; gap:20px; }
+  .grid-2 { grid-template-columns:1fr; }
+  @media(min-width: 768px){ .grid-2{grid-template-columns:1fr 1fr} }
+  .grid-3 { grid-template-columns:1fr; }
+  @media(min-width: 768px){ .grid-3{grid-template-columns:repeat(3,1fr)} }
 
-  /* Cards */
-  .card { background: var(--surface); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); transition: transform 0.2s; }
-  .card:hover { transform: translateY(-2px); }
-  h2, h3 { margin-top: 0; margin-bottom: 15px; color: var(--text-main); }
-  h3 { font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-  
-  /* Hero */
-  .hero { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; }
-  .hero h2 { color: white; margin-bottom: 5px; }
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
-  .stat-val { font-size: 1.8rem; font-weight: 800; display: block; }
-  .stat-lbl { font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card { background:var(--surface); padding:24px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow); }
+  h2, h3 { margin-top:0; color:var(--text-main); }
+  h3 { font-size:1.1rem; border-bottom:2px solid #f1f5f9; padding-bottom:10px; margin-bottom:15px; }
 
-  /* Quick Buttons */
-  .btn-quick { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: white; border: 1px solid var(--border); border-radius: var(--radius); gap: 10px; color: var(--text-main); height: 100%; transition: .2s; }
-  .btn-quick:hover { border-color: var(--primary); background: #f8fafc; }
-  .btn-icon { font-size: 2rem; }
+  .hero { background:linear-gradient(135deg, var(--primary), var(--primary-dark)); color:white; }
+  .hero h2 { color:white; }
+  .stat-row { display:flex; gap:20px; margin-top:15px; }
+  .stat-val { font-size:1.5rem; font-weight:800; }
+  .stat-lbl { font-size:0.8rem; opacity:0.9; }
 
-  /* Help Fab */
-  .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; transition: transform 0.2s; }
-  .fab-help:hover { transform: scale(1.1); background: var(--primary-dark); }
-  
-  .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; }
-  .modal.open { display: flex; animation: fadeIn 0.2s; }
-  .modal-box { background: white; padding: 30px; border-radius: 16px; max-width: 450px; width: 90%; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-  .close-modal { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 1.2rem; color: #999; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  /* Work Log Styles */
+  .log-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px dashed #eee; align-items:center; font-size:0.95rem; }
+  .log-time { font-family:monospace; color:var(--text-muted); font-size:0.85rem; }
+  .log-badge { padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; }
+  .bg-claim { background:#fee2e2; color:#b91c1c; }
+  .bg-check { background:#dcfce7; color:#15803d; }
 
-  /* Utility */
-  .hidden { display: none !important; }
-  .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-  .badge.off { background: #fee2e2; color: #991b1b; }
-  .badge.on { background: #dcfce7; color: #166534; }
+  /* Admin Toggle */
+  .admin-only { display:none; }
 </style>
 </head>
 <body>
@@ -85,146 +58,135 @@
 <header>
   <div class="brand">
     <button class="burger" id="btnMenu">☰</button>
-    <span>品質管理システム</span> <!-- Quality Management System -->
+    <span>品質管理システム</span>
   </div>
   <nav class="nav-desktop">
     <a href="./index.html" class="nav-link active">🏠 ホーム</a>
     <a href="./forms.html" class="nav-link">📄 成績書</a>
     <a href="./sagyoutejunsho.html" class="nav-link">📝 手順書</a>
-    <a href="./quality.html" class="nav-link">🔎 品質情報</a>
     <a href="./claim.html" class="nav-link">📢 クレーム</a>
+    <a href="./quality.html" class="nav-link">🔎 品質情報</a>
   </nav>
 </header>
 
-<!-- Mobile Drawer -->
 <div class="drawer" id="drawer">
   <div class="backdrop" id="closeDrawer"></div>
   <div class="drawer-content">
-    <h3 style="margin-top:10px;">メニュー (Menu)</h3>
-    <div class="drawer-menu">
-      <a href="./index.html" class="drawer-link active">🏠 ホーム</a>
-      <a href="./forms.html" class="drawer-link">📄 出荷検査成績書</a>
-      <a href="./sagyoutejunsho.html" class="drawer-link">📝 作業手順書</a>
-      <a href="./quality.html" class="drawer-link">🔎 品質情報</a>
-      <a href="./claim.html" class="drawer-link">📢 クレーム入力</a>
-      <hr style="border:0; border-top:1px solid #eee; width:100%">
-      <a href="./admin-prefix.html" class="drawer-link">🔑 管理者設定 (Admin)</a>
-    </div>
+    <h3>メニュー</h3>
+    <a href="./index.html" class="drawer-link active">🏠 ホーム</a>
+    <a href="./forms.html" class="drawer-link">📄 成績書</a>
+    <a href="./sagyoutejunsho.html" class="drawer-link">📝 手順書</a>
+    <a href="./claim.html" class="drawer-link">📢 クレーム</a>
+    <a href="./quality.html" class="drawer-link">🔎 品質情報</a>
+    <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+    <a href="./admin-prefix.html" class="drawer-link">🔑 Admin Prefix</a>
   </div>
 </div>
 
 <main class="container">
-  <!-- Hero Section -->
-  <div class="grid grid-2" style="margin-bottom: 25px;">
+  <div class="grid grid-2" style="margin-bottom:20px;">
+    <!-- Hero Section -->
     <section class="card hero">
       <h2>👋 お疲れ様です</h2>
-      <p style="opacity: 0.9;">本日の業務状況概要 (Status Hari Ini)</p>
-      <div class="stats-row">
-        <div><span class="stat-val">12</span><span class="stat-lbl">承認待ち</span></div>
-        <div><span class="stat-val">5</span><span class="stat-lbl">進行中</span></div>
-        <div><span class="stat-val" id="adminState">OFF</span><span class="stat-lbl">管理者モード</span></div>
+      <p>本日の業務状況 (Status Hari Ini)</p>
+      <div class="stat-row">
+        <div><div class="stat-val" id="countToday">0</div><div class="stat-lbl">本日のアクション</div></div>
+        <div><div class="stat-val" id="adminState">OFF</div><div class="stat-lbl">管理者モード</div></div>
       </div>
     </section>
 
-    <section class="card" style="border:none; background:transparent; box-shadow:none; padding:0;">
-      <div class="grid grid-2" style="height:100%">
-        <a href="./forms.html" class="btn-quick">
-          <div class="btn-icon">📄</div>
-          <strong>成績書検索</strong>
-        </a>
-        <a href="./claim.html" class="btn-quick">
-          <div class="btn-icon">📢</div>
-          <strong>クレーム報告</strong>
-        </a>
+    <!-- Work Log Section (NEW) -->
+    <section class="card">
+      <h3>📅 本日の業務ログ (Today's Activity)</h3>
+      <div id="todayList" style="max-height:200px; overflow-y:auto; padding-right:5px;">
+        <div style="color:#999; font-size:0.9rem; padding:10px 0;">まだ記録がありません (Belum ada aktivitas)</div>
       </div>
     </section>
   </div>
 
-  <!-- Secondary Content -->
   <div class="grid grid-3">
     <section class="card">
-      <h3>📂 最近の履歴</h3>
-      <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;" id="recentList">
-        <li>履歴なし (Belum ada history)</li>
-      </ul>
+      <h3>🚀 クイックアクセス</h3>
+      <div style="display:grid; gap:10px;">
+        <a href="./forms.html" class="nav-link" style="border:1px solid #eee; text-align:center;">📄 成績書検索</a>
+        <a href="./claim.html" class="nav-link" style="border:1px solid #eee; text-align:center;">📢 クレーム入力</a>
+      </div>
     </section>
 
     <section class="card">
       <h3>📎 リンク集</h3>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <a href="https://online.fliphtml5.com/fjppt/mhky/" target="_blank" class="nav-link" style="background:white; border:1px solid #eee">📘 検査基準書 (MB-XX)</a>
-        <a href="#" class="nav-link" style="background:white; border:1px solid #eee">📗 社内規定 (Internal Rule)</a>
+      <div style="display:grid; gap:10px;">
+        <a href="https://online.fliphtml5.com/fjppt/mhky/" target="_blank" class="nav-link" style="border:1px solid #eee;">📘 検査基準書 (MB-XX)</a>
       </div>
     </section>
 
     <section class="card">
       <h3>⚙️ 管理ツール</h3>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>ステータス:</span>
-          <span id="badgeAdmin" class="badge off">OFF</span>
-        </div>
-        <button id="btnToggleAdmin" class="nav-link" style="text-align:center; border:1px solid var(--border); cursor:pointer;">モード切替 (Switch)</button>
-        
-        <!-- Hidden links show when Admin ON -->
-        <a href="./admin-prefix.html" class="nav-link admin-only hidden" style="background:#fff7ed; color:#c2410c; text-align:center;">🔑 Prefix 設定</a>
-        <a href="./admin-serial-gas.html" class="nav-link admin-only hidden" style="background:#fff7ed; color:#c2410c; text-align:center;">⛽ シリアル管理</a>
+      <button id="btnToggleAdmin" style="width:100%; padding:10px; cursor:pointer; margin-bottom:10px; background:#fff; border:1px solid #ccc; border-radius:6px;">モード切替 (Admin Switch)</button>
+      <div class="admin-only">
+        <a href="./admin-prefix.html" class="nav-link" style="display:block; background:#fff7ed; color:#c2410c; margin-bottom:5px;">🔑 Prefix 設定</a>
+        <a href="./admin-serial-gas.html" class="nav-link" style="display:block; background:#fff7ed; color:#c2410c;">⛽ シリアル管理</a>
       </div>
     </section>
   </div>
 </main>
 
-<!-- Help Modal -->
-<button class="fab-help" onclick="toggleHelp()">?</button>
-
-<div class="modal" id="helpModal">
-  <div class="backdrop" onclick="toggleHelp()"></div>
-  <div class="modal-box">
-    <span class="close-modal" onclick="toggleHelp()">✕</span>
-    <h3>ℹ️ ヘルプ (Bantuan)</h3>
-    <p><strong>ホーム画面の使い方:</strong></p>
-    <ul style="font-size:0.95rem; padding-left:20px; color:#444; line-height:1.6;">
-      <li>各メニューから業務ページへ移動できます。<br><small>(Gunakan menu untuk navigasi)</small></li>
-      <li>「クイックアクセス」でよく使う機能へすぐ飛べます。<br><small>(Akses cepat ke menu penting)</small></li>
-      <li>管理者の方は「モード切替」からログインしてください。<br><small>(Admin login via tombol Switch)</small></li>
-    </ul>
-  </div>
-</div>
-
 <script>
-  /* --- Shared Logic --- */
+  // 1. Mobile Menu
   const $ = s => document.querySelector(s);
   $('#btnMenu').onclick = () => $('#drawer').classList.add('open');
   $('#closeDrawer').onclick = () => $('#drawer').classList.remove('open');
-  window.toggleHelp = () => $('#helpModal').classList.toggle('open');
 
-  /* --- Admin Logic --- */
+  // 2. Admin Logic
   const ADMIN_KEY = 'kensa_admin';
   function updateAdminUI(){
     const isAdmin = localStorage.getItem(ADMIN_KEY) === '1';
     $('#adminState').textContent = isAdmin ? 'ON' : 'OFF';
-    
-    const badge = $('#badgeAdmin');
-    badge.textContent = isAdmin ? 'ON' : 'OFF';
-    badge.className = isAdmin ? 'badge on' : 'badge off';
-
-    document.querySelectorAll('.admin-only').forEach(el => {
-      if(isAdmin) el.classList.remove('hidden'); else el.classList.add('hidden');
-    });
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'block' : 'none');
   }
-
   $('#btnToggleAdmin').onclick = () => {
     if(localStorage.getItem(ADMIN_KEY) === '1'){
-      if(confirm('ログアウトしますか？ (Logout?)')) localStorage.removeItem(ADMIN_KEY);
+      if(confirm('Logout dari Admin?')) localStorage.removeItem(ADMIN_KEY);
     } else {
-      if(prompt('パスワード (Password):') === 'admin2025') localStorage.setItem(ADMIN_KEY, '1');
-      else alert('パスワードが違います (Salah)');
+      if(prompt('Password Admin:') === 'admin2025') localStorage.setItem(ADMIN_KEY, '1');
+      else alert('Password Salah');
     }
     updateAdminUI();
   };
-  
-  // Init
   updateAdminUI();
+
+  // 3. Work Log Logic (NEW)
+  function renderTodayLogs() {
+    const logs = JSON.parse(localStorage.getItem('kensa_work_log') || '[]');
+    const todayStr = new Date().toLocaleDateString('ja-JP'); 
+    
+    // Filter hanya hari ini
+    const todayLogs = logs.filter(l => l.date === todayStr);
+    
+    $('#countToday').textContent = todayLogs.length;
+    const listEl = $('#todayList');
+    
+    if(todayLogs.length > 0) {
+      listEl.innerHTML = '';
+      // Tampilkan dari yang paling baru (reverse)
+      [...todayLogs].reverse().forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        
+        let typeBadge = '';
+        if(log.type === 'CLAIM') typeBadge = `<span class="log-badge bg-claim">CLAIM</span>`;
+        if(log.type === 'CHECK') typeBadge = `<span class="log-badge bg-check">CHECK</span>`;
+
+        item.innerHTML = `
+          <span class="log-time">${log.time}</span>
+          ${typeBadge}
+          <span style="flex:1; font-weight:500;">${log.title}</span>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+  }
+  renderTodayLogs();
 </script>
 </body>
 </html>
