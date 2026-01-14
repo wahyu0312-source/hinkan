@@ -3,333 +3,79 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>シリアル管理 (Serial List)</title>
+<title>Serial List</title>
 <style>
-  :root { --primary:#2563eb; --primary-dark:#1e40af; --bg-body:#f8fafc; --surface:#ffffff; --text-main:#0f172a; --border:#e2e8f0; --radius:12px; }
-  * { box-sizing: border-box; } body { margin:0; font-family:sans-serif; background:var(--bg-body); color:var(--text-main); padding-bottom:80px; }
+  :root { --primary:#2563eb; --bg-body:#f8fafc; --surface:#ffffff; --border:#e2e8f0; }
+  body { margin:0; font-family:sans-serif; background:var(--bg-body); padding-bottom:80px; }
   header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 20px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-  .brand { font-weight:bold; font-size:1.1rem; color:var(--primary); }
   .container { max-width:800px; margin:30px auto; padding:0 20px; }
-  
-  /* Toolbar */
-  .toolbar { display:flex; gap:10px; margin-bottom:20px; overflow-x:auto; padding-bottom:5px; }
-  .btn { padding:10px 16px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; white-space:nowrap; font-weight:bold; color:#555; transition: 0.2s; }
-  .btn:hover { background: #f1f5f9; }
-  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .btn-primary { background:var(--primary); color:white; border:none; }
-  .btn-primary:hover { background:var(--primary-dark); }
-  
-  /* Item Card */
-  .item-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:15px; display:grid; grid-template-columns:1fr auto; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s; }
-  .item-card:focus-within { border-color: var(--primary); box-shadow: 0 4px 12px rgba(37,99,235,0.1); }
-  @media(max-width: 600px){ .item-card { grid-template-columns: 1fr; } }
-
-  .item-main { display:flex; flex-direction:column; gap:10px; }
-  .input-label { font-size:0.75rem; font-weight:bold; color:#94a3b8; text-transform:uppercase; margin-bottom:2px; }
-  
-  /* Input Styles */
-  input { outline: none; transition: border 0.2s; }
-  input:focus { border-color: var(--primary) !important; }
-  .input-code { font-family:monospace; font-weight:bold; font-size:1.1rem; border:1px solid #ddd; padding:8px; border-radius:6px; width:100%; color:var(--primary); }
-  .input-desc { font-size:0.95rem; padding:8px; border:1px solid #ddd; border-radius:6px; width:100%; }
-  
-  .item-stats { display:flex; gap:15px; background:#f8fafc; padding:10px; border-radius:8px; margin-top:5px; }
-  .stat-grp { display:flex; flex-direction:column; flex:1; }
-  .stat-val { width:100%; padding:6px; border:1px solid #ddd; border-radius:4px; font-weight:bold; text-align:center; }
-
-  .item-actions { display:flex; flex-direction:column; gap:8px; min-width:120px; }
-  .btn-act { padding:8px 12px; font-size:0.85rem; border:1px solid #eee; background:white; cursor:pointer; text-align:left; border-radius:6px; transition:.2s; font-weight:bold; color:#444; display: flex; align-items: center; justify-content: center; gap: 6px; }
-  .btn-act:hover { background:#f1f5f9; border-color:#cbd5e1; }
-  .btn-act:disabled { background: #f5f5f5; color: #999; cursor: wait; }
-
-  /* Toast Notification */
-  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-  .toast { 
-    background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; 
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); font-size: 0.9rem; 
-    opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    display: flex; align-items: center; gap: 10px; pointer-events: auto; min-width: 250px;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.success { border-left: 4px solid #22c55e; }
-  .toast.error { border-left: 4px solid #ef4444; }
-  
-  /* Loading Spinner */
-  .spinner {
-    width: 14px; height: 14px; border: 2px solid currentColor; border-bottom-color: transparent; 
-    border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  
-  /* Help Fab */
-  .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; transition: transform 0.2s; }
-  .fab-help:hover { transform: scale(1.1); }
-  .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-  .modal.open { display: flex; animation: fadeIn 0.2s; }
-  .modal-box { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .item-card { background:var(--surface); border:1px solid var(--border); padding:20px; margin-bottom:15px; border-radius:12px; }
+  input { padding:8px; border:1px solid #ccc; border-radius:4px; margin-right:5px; }
+  button { padding:8px 12px; cursor:pointer; }
 </style>
 </head>
 <body>
-
 <header>
-  <div class="brand">⛽ シリアル管理</div>
-  <a href="./index.html" style="font-size:1.5rem; text-decoration:none;">🏠</a>
+  <div style="font-weight:bold; color:var(--primary)">⛽ Serial List</div>
+  <a href="./index.html" style="font-size:1.5rem; text-decoration:none">🏠</a>
 </header>
-
 <main class="container">
-  <div class="toolbar">
-    <button class="btn-primary" id="add">+ 追加 (Add)</button>
-    <button class="btn" id="refresh">🔄 更新 (Refresh)</button>
-    <button class="btn" id="export">⬇ CSV Export</button>
-  </div>
-
-  <input type="text" id="search" placeholder="🔍 リスト検索 (Prefix/Name)..." style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ccc; border-radius:8px;">
-
-  <div id="list">
-    <div style="text-align:center; padding:30px; color:#999;">Loading data...</div>
-  </div>
+  <button onclick="addItem()" style="margin-bottom:20px;">+ Add Item</button>
+  <div id="list"></div>
 </main>
-
-<div class="toast-container" id="toastBox"></div>
-
-<button class="fab-help" onclick="document.getElementById('help').classList.add('open')">?</button>
-<div class="modal" id="help">
-  <div class="modal-box">
-    <span style="position:absolute;top:15px;right:20px;cursor:pointer;font-size:1.2rem; color:#999;" onclick="document.getElementById('help').classList.remove('open')">✕</span>
-    <h3 style="margin-top:0">ℹ️ ヘルプ</h3>
-    <p>Prefixリストを管理します。<br>変更内容はブラウザに自動保存されます。</p>
-    <div style="background:#fffbeb; padding:10px; border-radius:8px; font-size:0.9rem; color:#b45309; border:1px solid #fcd34d;">
-      <strong>⚠️ Set Next:</strong><br>
-      サーバーの連番を強制変更します。<br>
-      慎重に操作してください。
-    </div>
-  </div>
-</div>
-
 <script>
-  // CONFIG - URL GAS ANDA
+  // URL GAS ANDA
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxK8yMSd6nOJVGeKlcmCIGVgXIp5JIGmyvAsqBHo6lSCyZ1rgXMZImUYxxtksKC8wwF/exec';
-  const STORE_KEY = 'kensa_serial_list';
+  
+  let list = JSON.parse(localStorage.getItem('kensa_serial_list')||'[]');
 
-  // UTILS
-  const $ = s => document.querySelector(s);
-  const loadList = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch { return []; } };
-  const saveList = (arr) => localStorage.setItem(STORE_KEY, JSON.stringify(arr));
-
-  // -- TOAST NOTIFICATION SYSTEM --
-  function showToast(msg, type = 'success') {
-    const box = document.getElementById('toastBox');
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span><span>${msg}</span>`;
-    box.appendChild(el);
-    
-    // Trigger animation
-    requestAnimationFrame(() => el.classList.add('show'));
-    
-    // Auto remove
-    setTimeout(() => {
-      el.classList.remove('show');
-      setTimeout(() => el.remove(), 300);
-    }, 3000);
-  }
-
-  // -- API WRAPPER --
-  async function apiGAS(body){
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(body)
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    return await res.json();
-  }
-
-  // Initial Data (if empty)
-  let listData = loadList();
-  if(listData.length === 0) {
-    listData = [
-      {prefix: "OKUMA::2825-", name: "MB46V Y-Axis", digits:3, next:1},
-      {prefix: "NTC::3596-", name: "WY-150V Cover", digits:4, next:1}
-    ];
-    saveList(listData);
-  }
-
-  function render(arr){
-    const root = document.getElementById('list'); root.innerHTML = '';
-    
-    if(arr.length === 0) {
-      root.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">データなし</div>';
-      return;
-    }
-
-    arr.forEach((it, idx) => {
-      const realIdx = listData.indexOf(it);
-      const card = document.createElement('div'); card.className = 'item-card';
-      
-      // Sanitasi input agar tidak null
-      const safePrefix = it.prefix || '';
-      const safeName = it.name || '';
-      const safeDigits = it.digits || '';
-      const safeNext = it.next || '';
-
-      card.innerHTML = `
-        <div class="item-main">
-          <div>
-            <div class="input-label">PREFIX KEY (APP_NS::PREFIX)</div>
-            <input class="input-code" value="${safePrefix}" placeholder="ex: OKUMA::2825-">
-          </div>
-          <div>
-            <div class="input-label">DESCRIPTION</div>
-            <input class="input-desc" value="${safeName}" placeholder="説明">
-          </div>
-          <div class="item-stats">
-            <div class="stat-grp">
-              <span class="input-label">DIGITS</span>
-              <input type="number" class="stat-val digits" value="${safeDigits}">
-            </div>
-            <div class="stat-grp">
-              <span class="input-label">NEXT #</span>
-              <input type="number" class="stat-val next" value="${safeNext}">
-            </div>
-          </div>
-        </div>
-        <div class="item-actions">
-          <button class="btn-act btn-info">ℹ️ Info</button>
-          <button class="btn-act btn-set-d">🔢 Set Digits</button>
-          <button class="btn-act btn-set-n" style="color:#b45309; background:#fffbeb; border-color:#fcd34d">⚠️ Set Next</button>
-          <button class="btn-act btn-del" style="color:#991b1b; margin-top:auto;">🗑 削除</button>
-        </div>
+  function render(){
+    const el = document.getElementById('list'); el.innerHTML = '';
+    list.forEach((it, idx) => {
+      const div = document.createElement('div'); div.className = 'item-card';
+      div.innerHTML = `
+        <input value="${it.prefix}" onchange="update(${idx}, 'prefix', this.value)" placeholder="KEY (NS::PFX)">
+        <input value="${it.name}" onchange="update(${idx}, 'name', this.value)" placeholder="Name">
+        <br><br>
+        Digit: <input type="number" value="${it.digits||3}" style="width:50px" id="d-${idx}">
+        Next: <input type="number" value="${it.next||1}" style="width:60px" id="n-${idx}">
+        <br><br>
+        <button onclick="syncInfo(${idx})">ℹ️ Sync Info</button>
+        <button onclick="pushDigit(${idx})">Set Digit</button>
+        <button onclick="pushNext(${idx})" style="color:red">Set Next</button>
+        <button onclick="delItem(${idx})">🗑</button>
       `;
-      
-      // Auto Save on Input Change
-      const inputs = card.querySelectorAll('input');
-      inputs.forEach(inp => {
-        inp.addEventListener('change', () => {
-          listData[realIdx].prefix = card.querySelector('.input-code').value;
-          listData[realIdx].name = card.querySelector('.input-desc').value;
-          listData[realIdx].digits = parseInt(card.querySelector('.digits').value) || '';
-          listData[realIdx].next = parseInt(card.querySelector('.next').value) || '';
-          saveList(listData);
-        });
-      });
-
-      // Helper: Loading Button State
-      const setBtnLoading = (btn, isLoading) => {
-        if(isLoading) {
-          btn.disabled = true;
-          const originalText = btn.innerText;
-          btn.dataset.text = originalText; // Simpan teks asli
-          btn.innerHTML = `<span class="spinner"></span> Wait`;
-        } else {
-          btn.disabled = false;
-          btn.innerText = btn.dataset.text || btn.innerText;
-        }
-      };
-
-      // --- BUTTON ACTIONS ---
-
-      // 1. INFO
-      card.querySelector('.btn-info').onclick = async (e) => {
-        const btn = e.currentTarget;
-        if(!listData[realIdx].prefix) return showToast('Prefix kosong!', 'error');
-        
-        setBtnLoading(btn, true);
-        try {
-          const res = await apiGAS({ action:'getInfo', prefix: listData[realIdx].prefix });
-          // Update UI & Data
-          if(res.digits) { listData[realIdx].digits = res.digits; card.querySelector('.digits').value = res.digits; }
-          if(res.next) { listData[realIdx].next = res.next; card.querySelector('.next').value = res.next; }
-          saveList(listData);
-          showToast(`Synced: Digits=${res.digits}, Next=${res.next}`);
-        } catch(err) { 
-          showToast(err.message, 'error'); 
-        } finally {
-          setBtnLoading(btn, false);
-        }
-      };
-
-      // 2. SET DIGITS
-      card.querySelector('.btn-set-d').onclick = async (e) => {
-        const btn = e.currentTarget;
-        const val = parseInt(card.querySelector('.digits').value);
-        if(!val) return showToast('Isi digits!', 'error');
-        if(!confirm(`Set Digits ke ${val}?`)) return;
-
-        setBtnLoading(btn, true);
-        try {
-          await apiGAS({ action:'setDigits', prefix: listData[realIdx].prefix, digits: val });
-          showToast('Digits updated!');
-        } catch(err) { showToast(err.message, 'error'); } 
-        finally { setBtnLoading(btn, false); }
-      };
-
-      // 3. SET NEXT
-      card.querySelector('.btn-set-n').onclick = async (e) => {
-        const btn = e.currentTarget;
-        const val = parseInt(card.querySelector('.next').value);
-        if(!val && val !== 0) return showToast('Isi next number!', 'error');
-        if(!confirm(`⚠️ BAHAYA: Reset counter ke ${val}?`)) return;
-
-        setBtnLoading(btn, true);
-        try {
-          await apiGAS({ action:'setNext', prefix: listData[realIdx].prefix, next: val });
-          showToast('Next number updated!');
-        } catch(err) { showToast(err.message, 'error'); } 
-        finally { setBtnLoading(btn, false); }
-      };
-
-      // 4. DELETE
-      card.querySelector('.btn-del').onclick = () => {
-        if(confirm('Hapus dari daftar lokal?')) {
-          listData.splice(realIdx, 1);
-          saveList(listData);
-          render(listData);
-          showToast('Item dihapus');
-        }
-      };
-
-      root.appendChild(card);
+      el.appendChild(div);
     });
   }
-  
-  // Initial Render
-  render(listData);
-  
-  // Search Logic (Debounced)
-  let debounceTimer;
-  document.getElementById('search').addEventListener('input', (e)=>{
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      const q = e.target.value.toLowerCase();
-      const filtered = listData.filter(x => (x.prefix||"").toLowerCase().includes(q) || (x.name||"").toLowerCase().includes(q));
-      render(filtered);
-    }, 300); // Tunggu 300ms sebelum render
-  });
-  
-  document.getElementById('add').onclick = () => {
-    listData.unshift({prefix:"", name:"", digits:3, next:1});
-    saveList(listData);
-    render(listData);
-    showToast('Item baru ditambahkan');
-  };
 
-  document.getElementById('refresh').onclick = async (e) => {
-    const btn = e.currentTarget;
-    const originalText = btn.innerText;
-    btn.disabled = true; 
-    btn.innerText = 'Refreshing...';
-    
-    // Simulasi refresh (karena refresh massal ke GAS satu per satu akan lama)
-    // Di sini kita hanya me-render ulang, tapi idealnya bisa loop fetch satu per satu jika diperlukan
-    setTimeout(() => {
-        render(listData);
-        btn.disabled = false;
-        btn.innerText = originalText;
-        showToast('List direfresh');
-    }, 500);
-  };
+  function update(idx, key, val){ list[idx][key] = val; localStorage.setItem('kensa_serial_list', JSON.stringify(list)); }
+  function addItem(){ list.push({prefix:'', name:'', digits:3, next:1}); render(); }
+  function delItem(idx){ if(confirm('Del?')){ list.splice(idx,1); localStorage.setItem('kensa_serial_list', JSON.stringify(list)); render(); } }
+
+  async function api(body){ return fetch(GAS_URL, {method:'POST', body:JSON.stringify(body)}).then(r=>r.json()); }
+
+  async function syncInfo(idx){
+    try {
+      const r = await api({action:'getInfo', prefix:list[idx].prefix});
+      alert(`Server: D=${r.digits}, N=${r.next}`);
+      if(r.digits) list[idx].digits = r.digits;
+      if(r.next) list[idx].next = r.next;
+      localStorage.setItem('kensa_serial_list', JSON.stringify(list)); render();
+    } catch(e){ alert(e); }
+  }
+
+  async function pushNext(idx){
+    const v = parseInt(document.getElementById('n-'+idx).value);
+    if(confirm('Reset server counter?')) await api({action:'setNext', prefix:list[idx].prefix, next:v});
+  }
+  
+  async function pushDigit(idx){
+    const v = parseInt(document.getElementById('d-'+idx).value);
+    await api({action:'setDigits', prefix:list[idx].prefix, digits:v});
+  }
+
+  render();
 </script>
 </body>
 </html>
