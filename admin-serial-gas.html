@@ -13,16 +13,23 @@
   
   /* Toolbar */
   .toolbar { display:flex; gap:10px; margin-bottom:20px; overflow-x:auto; padding-bottom:5px; }
-  .btn { padding:10px 16px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; white-space:nowrap; font-weight:bold; color:#555; }
+  .btn { padding:10px 16px; border-radius:8px; border:1px solid var(--border); background:white; cursor:pointer; white-space:nowrap; font-weight:bold; color:#555; transition: 0.2s; }
+  .btn:hover { background: #f1f5f9; }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .btn-primary { background:var(--primary); color:white; border:none; }
   .btn-primary:hover { background:var(--primary-dark); }
   
   /* Item Card */
-  .item-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:15px; display:grid; grid-template-columns:1fr auto; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,0.02); }
+  .item-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:15px; display:grid; grid-template-columns:1fr auto; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s; }
+  .item-card:focus-within { border-color: var(--primary); box-shadow: 0 4px 12px rgba(37,99,235,0.1); }
   @media(max-width: 600px){ .item-card { grid-template-columns: 1fr; } }
 
   .item-main { display:flex; flex-direction:column; gap:10px; }
   .input-label { font-size:0.75rem; font-weight:bold; color:#94a3b8; text-transform:uppercase; margin-bottom:2px; }
+  
+  /* Input Styles */
+  input { outline: none; transition: border 0.2s; }
+  input:focus { border-color: var(--primary) !important; }
   .input-code { font-family:monospace; font-weight:bold; font-size:1.1rem; border:1px solid #ddd; padding:8px; border-radius:6px; width:100%; color:var(--primary); }
   .input-desc { font-size:0.95rem; padding:8px; border:1px solid #ddd; border-radius:6px; width:100%; }
   
@@ -31,21 +38,43 @@
   .stat-val { width:100%; padding:6px; border:1px solid #ddd; border-radius:4px; font-weight:bold; text-align:center; }
 
   .item-actions { display:flex; flex-direction:column; gap:8px; min-width:120px; }
-  .btn-act { padding:8px 12px; font-size:0.85rem; border:1px solid #eee; background:white; cursor:pointer; text-align:left; border-radius:6px; transition:.2s; font-weight:bold; color:#444; }
+  .btn-act { padding:8px 12px; font-size:0.85rem; border:1px solid #eee; background:white; cursor:pointer; text-align:left; border-radius:6px; transition:.2s; font-weight:bold; color:#444; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .btn-act:hover { background:#f1f5f9; border-color:#cbd5e1; }
+  .btn-act:disabled { background: #f5f5f5; color: #999; cursor: wait; }
+
+  /* Toast Notification */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+  .toast { 
+    background: #1e293b; color: white; padding: 12px 20px; border-radius: 8px; 
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); font-size: 0.9rem; 
+    opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    display: flex; align-items: center; gap: 10px; pointer-events: auto; min-width: 250px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-left: 4px solid #22c55e; }
+  .toast.error { border-left: 4px solid #ef4444; }
+  
+  /* Loading Spinner */
+  .spinner {
+    width: 14px; height: 14px; border: 2px solid currentColor; border-bottom-color: transparent; 
+    border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
   
   /* Help Fab */
-  .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; }
-  .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); }
-  .modal.open { display: flex; }
-  .modal-box { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; position: relative; }
+  .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; transition: transform 0.2s; }
+  .fab-help:hover { transform: scale(1.1); }
+  .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+  .modal.open { display: flex; animation: fadeIn 0.2s; }
+  .modal-box { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 </head>
 <body>
 
 <header>
   <div class="brand">⛽ シリアル管理</div>
-  <a href="./index.html" style="font-size:1.5rem">🏠</a>
+  <a href="./index.html" style="font-size:1.5rem; text-decoration:none;">🏠</a>
 </header>
 
 <main class="container">
@@ -62,13 +91,19 @@
   </div>
 </main>
 
+<div class="toast-container" id="toastBox"></div>
+
 <button class="fab-help" onclick="document.getElementById('help').classList.add('open')">?</button>
 <div class="modal" id="help">
   <div class="modal-box">
-    <span style="position:absolute;top:15px;right:20px;cursor:pointer;font-size:1.2rem" onclick="document.getElementById('help').classList.remove('open')">✕</span>
-    <h3>ℹ️ ヘルプ</h3>
+    <span style="position:absolute;top:15px;right:20px;cursor:pointer;font-size:1.2rem; color:#999;" onclick="document.getElementById('help').classList.remove('open')">✕</span>
+    <h3 style="margin-top:0">ℹ️ ヘルプ</h3>
     <p>Prefixリストを管理します。<br>変更内容はブラウザに自動保存されます。</p>
-    <p style="color:#dc2626"><strong>Set Next:</strong> サーバーの連番を強制変更します。慎重に操作してください。</p>
+    <div style="background:#fffbeb; padding:10px; border-radius:8px; font-size:0.9rem; color:#b45309; border:1px solid #fcd34d;">
+      <strong>⚠️ Set Next:</strong><br>
+      サーバーの連番を強制変更します。<br>
+      慎重に操作してください。
+    </div>
   </div>
 </div>
 
@@ -82,6 +117,25 @@
   const loadList = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch { return []; } };
   const saveList = (arr) => localStorage.setItem(STORE_KEY, JSON.stringify(arr));
 
+  // -- TOAST NOTIFICATION SYSTEM --
+  function showToast(msg, type = 'success') {
+    const box = document.getElementById('toastBox');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span><span>${msg}</span>`;
+    box.appendChild(el);
+    
+    // Trigger animation
+    requestAnimationFrame(() => el.classList.add('show'));
+    
+    // Auto remove
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, 3000);
+  }
+
+  // -- API WRAPPER --
   async function apiGAS(body){
     const res = await fetch(GAS_URL, {
       method: 'POST',
@@ -111,28 +165,33 @@
     }
 
     arr.forEach((it, idx) => {
-      // Find original index to update the correct item
       const realIdx = listData.indexOf(it);
-
       const card = document.createElement('div'); card.className = 'item-card';
+      
+      // Sanitasi input agar tidak null
+      const safePrefix = it.prefix || '';
+      const safeName = it.name || '';
+      const safeDigits = it.digits || '';
+      const safeNext = it.next || '';
+
       card.innerHTML = `
         <div class="item-main">
           <div>
             <div class="input-label">PREFIX KEY (APP_NS::PREFIX)</div>
-            <input class="input-code" value="${it.prefix}">
+            <input class="input-code" value="${safePrefix}" placeholder="ex: OKUMA::2825-">
           </div>
           <div>
             <div class="input-label">DESCRIPTION</div>
-            <input class="input-desc" value="${it.name}">
+            <input class="input-desc" value="${safeName}" placeholder="説明">
           </div>
           <div class="item-stats">
             <div class="stat-grp">
               <span class="input-label">DIGITS</span>
-              <input type="number" class="stat-val digits" value="${it.digits}">
+              <input type="number" class="stat-val digits" value="${safeDigits}">
             </div>
             <div class="stat-grp">
               <span class="input-label">NEXT #</span>
-              <input type="number" class="stat-val next" value="${it.next}">
+              <input type="number" class="stat-val next" value="${safeNext}">
             </div>
           </div>
         </div>
@@ -144,52 +203,90 @@
         </div>
       `;
       
-      // Event Listeners for inputs (Auto Save)
+      // Auto Save on Input Change
       const inputs = card.querySelectorAll('input');
       inputs.forEach(inp => {
         inp.addEventListener('change', () => {
           listData[realIdx].prefix = card.querySelector('.input-code').value;
           listData[realIdx].name = card.querySelector('.input-desc').value;
-          listData[realIdx].digits = parseInt(card.querySelector('.digits').value) || 3;
-          listData[realIdx].next = parseInt(card.querySelector('.next').value) || 1;
+          listData[realIdx].digits = parseInt(card.querySelector('.digits').value) || '';
+          listData[realIdx].next = parseInt(card.querySelector('.next').value) || '';
           saveList(listData);
         });
       });
 
-      // Button Actions
-      card.querySelector('.btn-info').onclick = async () => {
-        if(!it.prefix) return alert('Prefix Key is empty');
+      // Helper: Loading Button State
+      const setBtnLoading = (btn, isLoading) => {
+        if(isLoading) {
+          btn.disabled = true;
+          const originalText = btn.innerText;
+          btn.dataset.text = originalText; // Simpan teks asli
+          btn.innerHTML = `<span class="spinner"></span> Wait`;
+        } else {
+          btn.disabled = false;
+          btn.innerText = btn.dataset.text || btn.innerText;
+        }
+      };
+
+      // --- BUTTON ACTIONS ---
+
+      // 1. INFO
+      card.querySelector('.btn-info').onclick = async (e) => {
+        const btn = e.currentTarget;
+        if(!listData[realIdx].prefix) return showToast('Prefix kosong!', 'error');
+        
+        setBtnLoading(btn, true);
         try {
-          const res = await apiGAS({ action:'getInfo', prefix: it.prefix });
-          alert(`Server Info:\nDigits: ${res.digits}\nNext: ${res.next}`);
-          // Update local view
+          const res = await apiGAS({ action:'getInfo', prefix: listData[realIdx].prefix });
+          // Update UI & Data
           if(res.digits) { listData[realIdx].digits = res.digits; card.querySelector('.digits').value = res.digits; }
           if(res.next) { listData[realIdx].next = res.next; card.querySelector('.next').value = res.next; }
           saveList(listData);
-        } catch(e) { alert(e.message); }
+          showToast(`Synced: Digits=${res.digits}, Next=${res.next}`);
+        } catch(err) { 
+          showToast(err.message, 'error'); 
+        } finally {
+          setBtnLoading(btn, false);
+        }
       };
 
-      card.querySelector('.btn-set-d').onclick = async () => {
-        if(!confirm('Server Digits を更新しますか？')) return;
+      // 2. SET DIGITS
+      card.querySelector('.btn-set-d').onclick = async (e) => {
+        const btn = e.currentTarget;
+        const val = parseInt(card.querySelector('.digits').value);
+        if(!val) return showToast('Isi digits!', 'error');
+        if(!confirm(`Set Digits ke ${val}?`)) return;
+
+        setBtnLoading(btn, true);
         try {
-          await apiGAS({ action:'setDigits', prefix: it.prefix, digits: parseInt(card.querySelector('.digits').value) });
-          alert('Updated Digits');
-        } catch(e) { alert(e.message); }
+          await apiGAS({ action:'setDigits', prefix: listData[realIdx].prefix, digits: val });
+          showToast('Digits updated!');
+        } catch(err) { showToast(err.message, 'error'); } 
+        finally { setBtnLoading(btn, false); }
       };
 
-      card.querySelector('.btn-set-n').onclick = async () => {
-        if(!confirm('Server Next を強制変更しますか？ (危険)')) return;
+      // 3. SET NEXT
+      card.querySelector('.btn-set-n').onclick = async (e) => {
+        const btn = e.currentTarget;
+        const val = parseInt(card.querySelector('.next').value);
+        if(!val && val !== 0) return showToast('Isi next number!', 'error');
+        if(!confirm(`⚠️ BAHAYA: Reset counter ke ${val}?`)) return;
+
+        setBtnLoading(btn, true);
         try {
-          await apiGAS({ action:'setNext', prefix: it.prefix, next: parseInt(card.querySelector('.next').value) });
-          alert('Updated Next');
-        } catch(e) { alert(e.message); }
+          await apiGAS({ action:'setNext', prefix: listData[realIdx].prefix, next: val });
+          showToast('Next number updated!');
+        } catch(err) { showToast(err.message, 'error'); } 
+        finally { setBtnLoading(btn, false); }
       };
 
+      // 4. DELETE
       card.querySelector('.btn-del').onclick = () => {
-        if(confirm('リストから削除しますか？')) {
+        if(confirm('Hapus dari daftar lokal?')) {
           listData.splice(realIdx, 1);
           saveList(listData);
           render(listData);
+          showToast('Item dihapus');
         }
       };
 
@@ -200,22 +297,38 @@
   // Initial Render
   render(listData);
   
-  // Search Logic
+  // Search Logic (Debounced)
+  let debounceTimer;
   document.getElementById('search').addEventListener('input', (e)=>{
-    const q = e.target.value.toLowerCase();
-    const filtered = listData.filter(x => (x.prefix||"").toLowerCase().includes(q) || (x.name||"").toLowerCase().includes(q));
-    render(filtered);
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const q = e.target.value.toLowerCase();
+      const filtered = listData.filter(x => (x.prefix||"").toLowerCase().includes(q) || (x.name||"").toLowerCase().includes(q));
+      render(filtered);
+    }, 300); // Tunggu 300ms sebelum render
   });
   
   document.getElementById('add').onclick = () => {
     listData.unshift({prefix:"", name:"", digits:3, next:1});
     saveList(listData);
     render(listData);
+    showToast('Item baru ditambahkan');
   };
 
-  document.getElementById('refresh').onclick = () => {
-    render(listData);
-    alert('Reloaded');
+  document.getElementById('refresh').onclick = async (e) => {
+    const btn = e.currentTarget;
+    const originalText = btn.innerText;
+    btn.disabled = true; 
+    btn.innerText = 'Refreshing...';
+    
+    // Simulasi refresh (karena refresh massal ke GAS satu per satu akan lama)
+    // Di sini kita hanya me-render ulang, tapi idealnya bisa loop fetch satu per satu jika diperlukan
+    setTimeout(() => {
+        render(listData);
+        btn.disabled = false;
+        btn.innerText = originalText;
+        showToast('List direfresh');
+    }, 500);
   };
 </script>
 </body>
