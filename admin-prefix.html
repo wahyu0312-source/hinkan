@@ -81,9 +81,13 @@
       </div>
 
       <div class="btn-group">
-        <button class="btn-outline">情報取得</button>
-        <button class="btn-save">桁数設定</button>
-        <button class="btn-danger">次番号設定</button>
+        <button id="btnFetch" class="btn-outline">情報取得</button>
+        <button id="btnSetDigits" class="btn-save">桁数設定</button>
+        <button id="btnSetNext" class="btn-danger">次番号設定</button>
+      </div>
+      
+      <div style="margin-top:10px; font-size:0.85rem; color:#64748b;">
+         <div id="serverInfo"></div>
       </div>
     </div>
   </div>
@@ -100,8 +104,25 @@
 </div>
 
 <script>
-  // Simple Local Logic
+  // CONFIG
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxK8yMSd6nOJVGeKlcmCIGVgXIp5JIGmyvAsqBHo6lSCyZ1rgXMZImUYxxtksKC8wwF/exec';
   const KEY = 'kensa_prefix';
+
+  // UTILS
+  const $ = s => document.querySelector(s);
+  const serverKeyOf = (appNs, prefix) => `${(appNs||'').trim()}::${(prefix||'').trim()}`;
+
+  async function apiGAS(body){
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }
+
+  // Local Logic
   function updateUI(){
     const val = localStorage.getItem(KEY);
     const box = document.getElementById('localStat');
@@ -125,6 +146,36 @@
     localStorage.removeItem(KEY); updateUI(); alert('クリアしました');
   };
   updateUI();
+
+  // Server Logic
+  $('#btnFetch').onclick = async () => {
+    const app = $('#ns').value.trim(); const pref = $('#srvPfx').value.trim();
+    if(!app || !pref) return alert('APP_NSとPrefixを入力してください');
+    try {
+        const info = await apiGAS({ action:'getInfo', prefix: serverKeyOf(app, pref) });
+        $('#serverInfo').innerHTML = `Digits: <b>${info.digits||'-'}</b> / Next: <b>${info.next||'-'}</b>`;
+        if(info.digits) $('#digits').value = info.digits;
+        if(info.next) $('#next').value = info.next;
+    } catch(e){ alert('Error: '+e.message); }
+  };
+
+  $('#btnSetDigits').onclick = async () => {
+    const app = $('#ns').value.trim(); const pref = $('#srvPfx').value.trim();
+    const d = parseInt($('#digits').value);
+    if(!app || !pref || !d) return;
+    if(!confirm('桁数を変更しますか？')) return;
+    await apiGAS({ action:'setDigits', prefix: serverKeyOf(app, pref), digits: d });
+    $('#btnFetch').click();
+  };
+
+  $('#btnSetNext').onclick = async () => {
+    const app = $('#ns').value.trim(); const pref = $('#srvPfx').value.trim();
+    const n = parseInt($('#next').value);
+    if(!app || !pref) return;
+    if(!confirm('次番号を変更しますか？ (注意: 重複の可能性があります)')) return;
+    await apiGAS({ action:'setNext', prefix: serverKeyOf(app, pref), next: n });
+    $('#btnFetch').click();
+  };
 </script>
 </body>
 </html>
