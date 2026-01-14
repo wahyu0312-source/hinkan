@@ -58,7 +58,6 @@
   <input type="text" id="search" placeholder="🔍 リスト検索 (Prefix/Name)..." style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ccc; border-radius:8px;">
 
   <div id="list">
-    <!-- Items will be rendered here -->
     <div style="text-align:center; padding:30px; color:#999;">Loading data...</div>
   </div>
 </main>
@@ -74,14 +73,35 @@
 </div>
 
 <script>
-  /* === SIMULASI DATA (Ganti dengan logika Load/Save asli Anda) === */
-  
-  const dummyList = [
-    {prefix: "OKUMA::2825-", name: "MB46V Y-Axis", digits:3, next:105},
-    {prefix: "NTC::3596-", name: "WY-150V Cover", digits:4, next:12},
-    {prefix: "TEST::9999-", name: "Test Unit", digits:3, next:5}
-  ];
-  
+  // CONFIG - URL GAS ANDA
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxK8yMSd6nOJVGeKlcmCIGVgXIp5JIGmyvAsqBHo6lSCyZ1rgXMZImUYxxtksKC8wwF/exec';
+  const STORE_KEY = 'kensa_serial_list';
+
+  // UTILS
+  const $ = s => document.querySelector(s);
+  const loadList = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch { return []; } };
+  const saveList = (arr) => localStorage.setItem(STORE_KEY, JSON.stringify(arr));
+
+  async function apiGAS(body){
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }
+
+  // Initial Data (if empty)
+  let listData = loadList();
+  if(listData.length === 0) {
+    listData = [
+      {prefix: "OKUMA::2825-", name: "MB46V Y-Axis", digits:3, next:1},
+      {prefix: "NTC::3596-", name: "WY-150V Cover", digits:4, next:1}
+    ];
+    saveList(listData);
+  }
+
   function render(arr){
     const root = document.getElementById('list'); root.innerHTML = '';
     
@@ -91,11 +111,14 @@
     }
 
     arr.forEach((it, idx) => {
+      // Find original index to update the correct item
+      const realIdx = listData.indexOf(it);
+
       const card = document.createElement('div'); card.className = 'item-card';
       card.innerHTML = `
         <div class="item-main">
           <div>
-            <div class="input-label">PREFIX KEY</div>
+            <div class="input-label">PREFIX KEY (APP_NS::PREFIX)</div>
             <input class="input-code" value="${it.prefix}">
           </div>
           <div>
@@ -105,38 +128,94 @@
           <div class="item-stats">
             <div class="stat-grp">
               <span class="input-label">DIGITS</span>
-              <input type="number" class="stat-val" value="${it.digits}">
+              <input type="number" class="stat-val digits" value="${it.digits}">
             </div>
             <div class="stat-grp">
               <span class="input-label">NEXT #</span>
-              <input type="number" class="stat-val" value="${it.next}">
+              <input type="number" class="stat-val next" value="${it.next}">
             </div>
           </div>
         </div>
         <div class="item-actions">
-          <button class="btn-act">ℹ️ Info</button>
-          <button class="btn-act">🔢 Set Digits</button>
-          <button class="btn-act" style="color:#b45309; background:#fffbeb; border-color:#fcd34d">⚠️ Set Next</button>
-          <button class="btn-act" style="color:#991b1b; margin-top:auto;">🗑 削除</button>
+          <button class="btn-act btn-info">ℹ️ Info</button>
+          <button class="btn-act btn-set-d">🔢 Set Digits</button>
+          <button class="btn-act btn-set-n" style="color:#b45309; background:#fffbeb; border-color:#fcd34d">⚠️ Set Next</button>
+          <button class="btn-act btn-del" style="color:#991b1b; margin-top:auto;">🗑 削除</button>
         </div>
       `;
+      
+      // Event Listeners for inputs (Auto Save)
+      const inputs = card.querySelectorAll('input');
+      inputs.forEach(inp => {
+        inp.addEventListener('change', () => {
+          listData[realIdx].prefix = card.querySelector('.input-code').value;
+          listData[realIdx].name = card.querySelector('.input-desc').value;
+          listData[realIdx].digits = parseInt(card.querySelector('.digits').value) || 3;
+          listData[realIdx].next = parseInt(card.querySelector('.next').value) || 1;
+          saveList(listData);
+        });
+      });
+
+      // Button Actions
+      card.querySelector('.btn-info').onclick = async () => {
+        if(!it.prefix) return alert('Prefix Key is empty');
+        try {
+          const res = await apiGAS({ action:'getInfo', prefix: it.prefix });
+          alert(`Server Info:\nDigits: ${res.digits}\nNext: ${res.next}`);
+          // Update local view
+          if(res.digits) { listData[realIdx].digits = res.digits; card.querySelector('.digits').value = res.digits; }
+          if(res.next) { listData[realIdx].next = res.next; card.querySelector('.next').value = res.next; }
+          saveList(listData);
+        } catch(e) { alert(e.message); }
+      };
+
+      card.querySelector('.btn-set-d').onclick = async () => {
+        if(!confirm('Server Digits を更新しますか？')) return;
+        try {
+          await apiGAS({ action:'setDigits', prefix: it.prefix, digits: parseInt(card.querySelector('.digits').value) });
+          alert('Updated Digits');
+        } catch(e) { alert(e.message); }
+      };
+
+      card.querySelector('.btn-set-n').onclick = async () => {
+        if(!confirm('Server Next を強制変更しますか？ (危険)')) return;
+        try {
+          await apiGAS({ action:'setNext', prefix: it.prefix, next: parseInt(card.querySelector('.next').value) });
+          alert('Updated Next');
+        } catch(e) { alert(e.message); }
+      };
+
+      card.querySelector('.btn-del').onclick = () => {
+        if(confirm('リストから削除しますか？')) {
+          listData.splice(realIdx, 1);
+          saveList(listData);
+          render(listData);
+        }
+      };
+
       root.appendChild(card);
     });
   }
   
   // Initial Render
-  render(dummyList);
+  render(listData);
   
   // Search Logic
   document.getElementById('search').addEventListener('input', (e)=>{
     const q = e.target.value.toLowerCase();
-    const filtered = dummyList.filter(x => x.prefix.toLowerCase().includes(q) || x.name.toLowerCase().includes(q));
+    const filtered = listData.filter(x => (x.prefix||"").toLowerCase().includes(q) || (x.name||"").toLowerCase().includes(q));
     render(filtered);
   });
   
   document.getElementById('add').onclick = () => {
-    dummyList.unshift({prefix:"", name:"", digits:3, next:1});
-    render(dummyList);
+    listData.unshift({prefix:"", name:"", digits:3, next:1});
+    saveList(listData);
+    render(listData);
+  };
+
+  document.getElementById('refresh').onclick = () => {
+    render(listData);
+    alert('Reloaded');
   };
 </script>
 </body>
