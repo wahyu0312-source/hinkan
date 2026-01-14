@@ -3,73 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>作業手順書 (Work Procedures)</title>
+<title>作業手順書</title>
 <style>
-  :root { --primary:#2563eb; --primary-dark:#1e40af; --bg-body:#f8fafc; --surface:#ffffff; --text-main:#0f172a; --border:#e2e8f0; --radius:12px; }
+  :root { --primary:#2563eb; --bg-body:#f8fafc; --surface:#ffffff; --text-main:#0f172a; --border:#e2e8f0; --radius:12px; }
   * { box-sizing: border-box; } body { margin:0; font-family:sans-serif; background:var(--bg-body); color:var(--text-main); padding-bottom:80px; }
   header { background:var(--surface); border-bottom:1px solid var(--border); padding:0 20px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-  .brand { font-weight:bold; font-size:1.1rem; color:var(--primary); }
+  .brand { font-weight:bold; font-size:1.1rem; color:var(--primary); text-decoration:none; }
   .container { max-width:800px; margin:30px auto; padding:0 20px; }
-
-  /* List Items */
-  .search-box { width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:1rem; margin-bottom:20px; background:white; }
-  .card { background:var(--surface); padding:16px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:12px; display:flex; align-items:center; gap:16px; text-decoration:none; color:inherit; transition:transform .2s; }
-  .card:hover { border-color:var(--primary); transform:translateX(5px); box-shadow:0 4px 6px rgba(0,0,0,0.05); }
-  .icon-box { width:48px; height:48px; background:#eff6ff; color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
-  
-  /* Help Fab */
-  .fab-help { position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; box-shadow: 0 4px 12px rgba(37,99,235,0.4); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 90; }
-  .modal { display: none; position: fixed; inset: 0; z-index: 200; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); }
-  .modal.open { display: flex; }
-  .modal-box { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; position: relative; }
+  .card { background:var(--surface); padding:16px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:12px; display:flex; align-items:center; gap:16px; text-decoration:none; color:inherit; }
+  .icon-box { width:48px; height:48px; background:#eff6ff; color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
 </style>
 </head>
 <body>
-
 <header>
-  <div class="brand">📝 作業手順書</div>
-  <a href="./index.html" style="font-size:1.5rem">🏠</a>
+  <a href="./index.html" class="brand">📝 作業手順書</a>
+  <a href="./index.html" style="font-size:1.5rem; text-decoration:none">🏠</a>
 </header>
-
 <main class="container">
-  <input type="text" class="search-box" placeholder="🔍 手順書を検索 (Cari SOP)...">
+  <input type="text" placeholder="🔍 手順書を検索..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
   
-  <div id="list">
-    <!-- Items -->
-    <a href="#" class="card">
-      <div class="icon-box">📘</div>
-      <div>
-        <strong style="font-size:1.05rem;">出荷検査手順書 (MB-XX)</strong>
-        <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">FlipHTML5 • 最終更新: 2024/01</div>
-      </div>
-    </a>
-    
-    <a href="#" class="card">
-      <div class="icon-box">🛠</div>
-      <div>
-        <strong style="font-size:1.05rem;">組立手順 (2835-20)</strong>
-        <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">Y軸組立標準 • PDF</div>
-      </div>
-    </a>
-
-    <a href="#" class="card">
-      <div class="icon-box">⚠️</div>
-      <div>
-        <strong style="font-size:1.05rem;">外観検査基準 (Visual Check)</strong>
-        <div style="font-size:0.85rem; color:#64748b; margin-top:4px;">PDF • Ver 3.0</div>
-      </div>
-    </a>
-  </div>
+  <a href="#" class="card">
+    <div class="icon-box">📘</div>
+    <div><strong>出荷検査手順書 (MB-XX)</strong><br><small style="color:#666">FlipHTML5</small></div>
+  </a>
+  <a href="#" class="card">
+    <div class="icon-box">🛠</div>
+    <div><strong>組立手順 (2835-20)</strong><br><small style="color:#666">PDF</small></div>
+  </a>
 </main>
-
-<button class="fab-help" onclick="document.getElementById('help').classList.add('open')">?</button>
-<div class="modal" id="help">
-  <div class="modal-box">
-    <span style="position:absolute;top:15px;right:20px;cursor:pointer;font-size:1.2rem" onclick="document.getElementById('help').classList.remove('open')">✕</span>
-    <h3>ℹ️ ヘルプ</h3>
-    <p>必要なマニュアルをタップして開いてください。</p>
-  </div>
-</div>
-
 </body>
 </html>
